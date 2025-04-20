@@ -15,7 +15,7 @@ const SubjectListPage = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-  const { sessionClaims } = auth();
+  const { sessionClaims } =await auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
 
   const columns = [
@@ -26,7 +26,7 @@ const SubjectListPage = async ({
     {
       header: "Teachers",
       accessor: "teachers",
-      className: "  md:table-cell",
+      className: " md:table-cell",
     },
     {
       header: "Actions",
@@ -40,7 +40,7 @@ const SubjectListPage = async ({
       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
     >
       <td className="flex items-center gap-4 p-4">{item.name}</td>
-      <td className="  md:table-cell">
+      <td className=" md:table-cell">
         {item.teachers.map((teacher) => teacher.name).join(",")}
       </td>
       <td>
@@ -94,7 +94,7 @@ const SubjectListPage = async ({
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       {/* TOP */}
       <div className="flex items-center justify-between">
-        <h1 className="  md:block text-lg font-semibold">All Subjects</h1>
+        <h1 className=" md:block text-lg font-semibold">All Subjects</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
           <div className="flex items-center gap-4 self-end">

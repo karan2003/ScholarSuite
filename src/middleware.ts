@@ -1,77 +1,33 @@
-// middleware.ts
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { clerkMiddleware, createRouteMatcher, auth } from '@clerk/nextjs/server';
+import { routeAccessMap } from "./lib/settings";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-// Define your route access matrix
-export const routeAccessMap: Record<string, string[]> = {
-  "/admin": ["admin"],
-  "/student": ["student"],
-  "/teacher": ["teacher"],
-  "/dashboard": ["admin", "teacher"],
-  "/profile": ["admin", "teacher", "student"],
-};
-
-// Create route matchers with proper types
-const protectedRoutes = Object.entries(routeAccessMap).map(([route, roles]) => ({
+const matchers = Object.keys(routeAccessMap).map((route) => ({
   matcher: createRouteMatcher([route]),
-  allowedRoles: roles,
+  allowedRoles: routeAccessMap[route],
 }));
 
-// Fallback routes for role resolution
-const roleBasePaths: Record<string, string> = {
-  admin: "/dashboard",
-  student: "/student",
-  teacher: "/teacher",
-};
+console.log(matchers);
 
-export default clerkMiddleware((auth, req: NextRequest) => {
-  // Handle public routes
-  const isPublicRoute = ["/", "/sign-in", "/sign-up"].some(path =>
-    req.nextUrl.pathname.startsWith(path)
-  );
-  
-  if (isPublicRoute) return NextResponse.next();
+export default clerkMiddleware(async(auth, req) => {
+  //if (isProtectedRoute(req)) auth().protect()
 
-  // Get authenticated state
-  const { sessionClaims, userId } = auth();
-  
-  // Handle unauthenticated access to protected routes
-  if (!userId) {
-    return NextResponse.redirect(new URL("/sign-in", req.url));
-  }
+  const { sessionClaims } =  await auth();
 
-  // Resolve user role with type safety
-  const role = (sessionClaims?.metadata as { role?: string })?.role?.toLowerCase() || "";
-  const basePath = roleBasePaths[role] || "/dashboard";
+  const role = (sessionClaims?.metadata as { role?: string })?.role;
 
-  // Validate route access
-  for (const { matcher, allowedRoles } of protectedRoutes) {
-    if (matcher(req)) {
-      const hasAccess = allowedRoles.includes(role);
-      
-      if (!hasAccess) {
-        // Redirect to role-specific home or unauthorized
-        const redirectPath = role ? basePath : "/unauthorized";
-        return NextResponse.redirect(new URL(redirectPath, req.url));
-      }
-      
-      break; // Stop checking after first match
+  for (const { matcher, allowedRoles } of matchers) {
+    if (matcher(req) && !allowedRoles.includes(role!)) {
+      return NextResponse.redirect(new URL(`/${role}`, req.url));
     }
   }
-
-  // Add security headers for protected routes
-  const response = NextResponse.next();
-  response.headers.set("X-Content-Type-Options", "nosniff");
-  response.headers.set("X-Frame-Options", "DENY");
-  
-  return response;
 });
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
-    "/",
+    // Skip Next.js internals and all static files, unless found in search params
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    // Always run for API routes
     "/(api|trpc)(.*)",
   ],
 };
