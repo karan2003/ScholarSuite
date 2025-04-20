@@ -17,7 +17,20 @@ export default function DashboardLayout({
           className="flex items-center justify-center lg:justify-start gap-2"
         >
           <Image src="/logo.png" alt="logo" width={32} height={32} />
-          <span className="hidden lg:block font-bold">SchooLama</span>
+          <span className="
+                lg:block 
+                font-bold 
+            +   bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent 
+            +   transition-all duration-300 
+            +   hover:from-blue-700 hover:to-purple-700 
+            +   relative
+            +   after:absolute after:bottom-0 after:left-0 after:h-px after:w-0 
+            +   after:bg-gradient-to-r after:from-blue-600 after:to-purple-600 
+            +   after:transition-all after:duration-300 after:hover:w-full
+            +   tracking-tighter
+            ">
+          ScholarSuite
+          </span>
         </Link>
         <Menu />
       </div>

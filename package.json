@@ -10,8 +10,8 @@
   },
   "dependencies": {
     "@clerk/clerk-react": "^5.28.0",
-    "@clerk/elements": "^0.14.6",
-    "@clerk/nextjs": "^5.7.5",
+    "@clerk/elements": "^0.23.14",
+    "@clerk/nextjs": "^6.15.0",
     "@hookform/resolvers": "^3.9.0",
     "@prisma/client": "^6.6.0",
     "@types/react-big-calendar": "^1.8.9",
@@ -24,6 +24,7 @@
     "react-calendar": "^5.0.0",
     "react-dom": "^18",
     "react-hook-form": "^7.52.2",
+    "react-spinners": "^0.16.1",
     "react-toastify": "^10.0.6",
     "recharts": "^2.12.7",
     "zod": "^3.23.8"
