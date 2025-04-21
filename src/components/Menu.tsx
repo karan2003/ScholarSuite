@@ -90,6 +90,12 @@ const menuItems = [
         href: "/list/announcements",
         visible: ["admin", "teacher", "student", "parent"],
       },
+      {
+        icon: "/calculator.png",
+        label: "Percentage Calculator",
+        href: "/list/Cgpa",
+        visible: ["admin", "teacher", "student", "parent"],
+      },
     ],
   },
   {

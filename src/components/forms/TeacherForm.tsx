@@ -1,4 +1,4 @@
-"use client";
+  "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -184,7 +184,7 @@ const TeacherForm = ({
           )}
         </div>
         <CldUploadWidget
-          uploadPreset="scholarsuite"
+          uploadPreset="school"
           onSuccess={(result, { widget }) => {
             setImg(result.info);
             widget.close();
