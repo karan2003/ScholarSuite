@@ -1,13 +1,15 @@
 import { z } from "zod";
 
+
 export const subjectSchema = z.object({
   id: z.coerce.number().optional(),
   name: z.string().min(1, { message: "Subject name is required!" }),
-  teachers: z.array(z.string()), //teacher ids
+  subjectCode: z.string().min(1, { message: "Subject code is required!" }),
+  credit: z.coerce.number().min(1, { message: "Credit must be at least 1" }),
+  teachers: z.array(z.string()).optional(), // list of teacher IDs
 });
 
 export type SubjectSchema = z.infer<typeof subjectSchema>;
-
 export const classSchema = z.object({
   id: z.coerce.number().optional(),
   name: z.string().min(1, { message: "Subject name is required!" }),
@@ -65,3 +67,19 @@ export const examSchema = z.object({
 });
 
 export type ExamSchema = z.infer<typeof examSchema>;
+
+
+// formValidationSchemas.txt updates
+export const resultSchema = z.object({
+  id: z.coerce.number().optional(),
+  score: z.coerce.number({ required_error: "Score is required" })
+    .min(0, { message: "Score must be ≥ 0" })
+    .max(100, { message: "Score must be ≤ 100" }),
+  examId: z.coerce.number().optional(),
+  assignmentId: z.coerce.number().optional(),
+  studentId: z.string().min(1, "Student is required"),
+  subjectId: z.coerce.number({ required_error: "Subject is required" }),
+}).refine(data => data.examId || data.assignmentId, {
+  message: "Either exam or assignment must be selected",
+  path: ["examId"]
+});

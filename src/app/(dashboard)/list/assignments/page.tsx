@@ -21,30 +21,29 @@ const AssignmentListPage = async ({
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-
-  const { userId, sessionClaims } =await auth();
+  const { userId, sessionClaims } = await auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
   const currentUserId = userId;
-  
-  
+
   const columns = [
     {
-      header: "Subject Name",
+      header: "Subject",
       accessor: "name",
     },
     {
       header: "Class",
       accessor: "class",
+      className: "md:table-cell",
     },
     {
       header: "Teacher",
       accessor: "teacher",
-      className: "  md:table-cell",
+      className: "md:table-cell",
     },
     {
       header: "Due Date",
       accessor: "dueDate",
-      className: "  md:table-cell",
+      className: "md:table-cell",
     },
     ...(role === "admin" || role === "teacher"
       ? [
@@ -55,18 +54,21 @@ const AssignmentListPage = async ({
         ]
       : []),
   ];
-  
+
   const renderRow = (item: AssignmentList) => (
     <tr
       key={item.id}
       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
     >
-      <td className="flex items-center gap-4 p-4">{item.lesson.subject.name}</td>
+      {/* Show Subject Name along with its credit value */}
+      <td className="flex items-center gap-4 p-4">
+        {item.lesson.subject.name} ({item.lesson.subject.credit} credits)
+      </td>
       <td>{item.lesson.class.name}</td>
-      <td className="  md:table-cell">
+      <td className="md:table-cell">
         {item.lesson.teacher.name + " " + item.lesson.teacher.surname}
       </td>
-      <td className="  md:table-cell">
+      <td className="md:table-cell">
         {new Intl.DateTimeFormat("en-US").format(item.dueDate)}
       </td>
       <td>
@@ -83,13 +85,10 @@ const AssignmentListPage = async ({
   );
 
   const { page, ...queryParams } = searchParams;
-
   const p = page ? parseInt(page) : 1;
 
-  // URL PARAMS CONDITION
-
+  // Build URL-based filter conditions.
   const query: Prisma.AssignmentWhereInput = {};
-
   query.lesson = {};
 
   if (queryParams) {
@@ -114,8 +113,7 @@ const AssignmentListPage = async ({
     }
   }
 
-  // ROLE CONDITIONS
-
+  // Role conditions.
   switch (role) {
     case "admin":
       break;
@@ -150,7 +148,7 @@ const AssignmentListPage = async ({
       include: {
         lesson: {
           select: {
-            subject: { select: { name: true } },
+            subject: { select: { name: true, credit: true } },
             teacher: { select: { name: true, surname: true } },
             class: { select: { name: true } },
           },
@@ -161,26 +159,23 @@ const AssignmentListPage = async ({
     }),
     prisma.assignment.count({ where: query }),
   ]);
+
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       {/* TOP */}
       <div className="flex items-center justify-between">
-        <h1 className="  md:block text-lg font-semibold">
-          All Assignments
-        </h1>
+        <h1 className="md:block text-lg font-semibold">All Assignments</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
           <div className="flex items-center gap-4 self-end">
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/filter.png" alt="" width={14} height={14} />
+              <Image src="/filter.png" alt="Filter" width={14} height={14} />
             </button>
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
+              <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
-            {role === "admin" ||
-              (role === "teacher" && (
-                <FormModal table="assignment" type="create" />
-              ))}
+            {(role === "admin" || role === "teacher") &&
+              <FormModal table="assignment" type="create" />}
           </div>
         </div>
       </div>

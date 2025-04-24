@@ -1,6 +1,5 @@
 import Announcements from "@/components/Announcements";
 import BigCalendarContainer from "@/components/BigCalendarContainer";
-import BigCalendar from "@/components/BigCalender";
 import FormContainer from "@/components/FormContainer";
 import Performance from "@/components/performance";
 import prisma from "@/lib/prisma";
@@ -18,19 +17,14 @@ const SingleTeacherPage = async ({
   const { sessionClaims } = await auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
 
-  const teacher:
-    | (Teacher & {
-        _count: { subjects: number; lessons: number; classes: number };
-      })
-    | null = await prisma.teacher.findUnique({
+  // Fetch the teacher record with counts of related subjects, lessons, and classes
+  const teacher: (Teacher & {
+    _count: { subjects: number; lessons: number; classes: number };
+  }) | null = await prisma.teacher.findUnique({
     where: { id },
     include: {
       _count: {
-        select: {
-          subjects: true,
-          lessons: true,
-          classes: true,
-        },
+        select: { subjects: true, lessons: true, classes: true },
       },
     },
   });
@@ -38,18 +32,19 @@ const SingleTeacherPage = async ({
   if (!teacher) {
     return notFound();
   }
+
   return (
     <div className="flex-1 p-4 flex flex-col gap-4 xl:flex-row">
-      {/* LEFT */}
+      {/* LEFT COLUMN */}
       <div className="w-full xl:w-2/3">
-        {/* TOP */}
+        {/* TOP SECTION: Teacher Info & Small Cards */}
         <div className="flex flex-col lg:flex-row gap-4">
-          {/* USER INFO CARD */}
+          {/* Teacher Info Card */}
           <div className="bg-lamaSky py-6 px-4 rounded-md flex-1 flex gap-4">
             <div className="w-1/3">
               <Image
                 src={teacher.img || "/noAvatar.png"}
-                alt=""
+                alt="Teacher Avatar"
                 width={144}
                 height={144}
                 className="w-36 h-36 rounded-full object-cover"
@@ -64,89 +59,92 @@ const SingleTeacherPage = async ({
                   <FormContainer table="teacher" type="update" data={teacher} />
                 )}
               </div>
-              <p className="text-sm text-gray-500">
-              {teacher.address}
-              </p>
-              <div className="flex items-center justify-between gap-2 flex-wrap text-xs font-medium">
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
-                  <Image src="/blood.png" alt="" width={14} height={14} />
+              <p className="text-sm text-gray-500">{teacher.address}</p>
+              <div className="flex flex-wrap gap-2 text-xs font-medium">
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="/blood.png"
+                    alt="Blood Type"
+                    width={14}
+                    height={14}
+                  />
                   <span>{teacher.bloodType}</span>
                 </div>
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
-                  <Image src="/date.png" alt="" width={14} height={14} />
+                <div className="flex items-center gap-2">
+                  <Image src="/date.png" alt="Birthday" width={14} height={14} />
                   <span>
                     {new Intl.DateTimeFormat("en-GB").format(teacher.birthday)}
                   </span>
                 </div>
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
-                  <Image src="/mail.png" alt="" width={14} height={14} />
+                <div className="flex items-center gap-2">
+                  <Image src="/mail.png" alt="Email" width={14} height={14} />
                   <span>{teacher.email || "-"}</span>
                 </div>
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
-                  <Image src="/phone.png" alt="" width={14} height={14} />
+                <div className="flex items-center gap-2">
+                  <Image src="/phone.png" alt="Phone" width={14} height={14} />
                   <span>{teacher.phone || "-"}</span>
                 </div>
               </div>
             </div>
           </div>
-          {/* SMALL CARDS */}
-          <div className="flex-1 flex gap-4 justify-between flex-wrap">
-            {/* CARD */}
-            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
+          {/* Small Cards: using a grid layout for proper alignment */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+            {/* Attendance Card (static value; adjust if dynamic attendance available) */}
+            <div className="bg-white p-4 rounded-md flex items-center gap-4">
               <Image
                 src="/singleAttendance.png"
-                alt=""
+                alt="Attendance"
                 width={24}
                 height={24}
                 className="w-6 h-6"
               />
-              <div className="">
+              <div>
                 <h1 className="text-xl font-semibold">90%</h1>
                 <span className="text-sm text-gray-400">Attendance</span>
               </div>
             </div>
-            {/* CARD */}
-            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
+            {/* Subjects Card */}
+            <div className="bg-white p-4 rounded-md flex items-center gap-4">
               <Image
                 src="/singleBranch.png"
-                alt=""
+                alt="Subjects"
                 width={24}
                 height={24}
                 className="w-6 h-6"
               />
-              <div className="">
+              <div>
                 <h1 className="text-xl font-semibold">
                   {teacher._count.subjects}
                 </h1>
-                <span className="text-sm text-gray-400">Branches</span>
+                <span className="text-sm text-gray-400">Subjects</span>
               </div>
             </div>
-            {/* CARD */}
-            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
+            {/* Lessons Card */}
+            <div className="bg-white p-4 rounded-md flex items-center gap-4">
               <Image
                 src="/singleLesson.png"
-                alt=""
+                alt="Lessons"
                 width={24}
                 height={24}
                 className="w-6 h-6"
               />
-              <div className="">
+              <div>
                 <h1 className="text-xl font-semibold">
                   {teacher._count.lessons}
                 </h1>
                 <span className="text-sm text-gray-400">Lessons</span>
               </div>
             </div>
-            {/* CARD */}
-            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
+            {/* Classes Card */}
+            <div className="bg-white p-4 rounded-md flex items-center gap-4">
               <Image
                 src="/singleClass.png"
-                alt=""
+                alt="Classes"
                 width={24}
                 height={24}
                 className="w-6 h-6"
               />
-              <div className="">
+              <div>
                 <h1 className="text-xl font-semibold">
                   {teacher._count.classes}
                 </h1>
@@ -155,18 +153,18 @@ const SingleTeacherPage = async ({
             </div>
           </div>
         </div>
-        {/* BOTTOM */}
+        {/* BOTTOM SECTION: Teacher's Schedule */}
         <div className="mt-4 bg-white rounded-md p-4 h-[800px]">
           <h1>Teacher&apos;s Schedule</h1>
           <BigCalendarContainer type="teacherId" id={teacher.id} />
         </div>
       </div>
-      {/* RIGHT */}
+      {/* RIGHT COLUMN */}
       <div className="w-full xl:w-1/3 flex flex-col gap-4">
         <div className="bg-white p-4 rounded-md">
           <h1 className="text-xl font-semibold">Shortcuts</h1>
           <div className="mt-4 flex gap-4 flex-wrap text-xs text-gray-500">
-           <Link
+            <Link
               className="p-3 rounded-md bg-lamaSkyLight"
               href={`/list/classes?supervisorId=${teacher.id}`}
             >

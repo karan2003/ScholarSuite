@@ -21,34 +21,46 @@
     setOpen: Dispatch<SetStateAction<boolean>>;
     relatedData?: any;
     }) => {
+    // Set defaultValues so that keys (even if empty) are always sent
     const {
         register,
         handleSubmit,
         formState: { errors },
     } = useForm<SubjectSchema>({
         resolver: zodResolver(subjectSchema),
+        defaultValues: {
+        name: data?.name || "",
+        subjectCode: data?.subjectCode || "",
+        credit: data?.credit || 0,
+        teachers: data?.teachers || [],
+        // Only include id if it is provided
+        ...(data?.id ? { id: data.id } : {}),
+        },
     });
 
-    // AFTER REACT 19 IT'LL BE USEACTIONSTATE
-
+    // Use useFormState from react-dom for handling the create/update action.
     const [state, formAction] = useFormState(
         type === "create" ? createSubject : updateSubject,
-        {
-        success: false,
-        error: false,
-        }
+        { success: false, error: false }
     );
 
-    const onSubmit = handleSubmit((data) => {
-        console.log(data);
-        formAction(data);
+    const onSubmit = handleSubmit((formData) => {
+        console.log("Submitted form data:", formData);
+        // Create a shallow copy and remove keys with undefined values (especially id)
+        const payload = { ...formData };
+        if (payload.id === undefined) {
+        delete payload.id;
+        }
+        formAction(payload);
     });
 
     const router = useRouter();
 
     useEffect(() => {
         if (state.success) {
-        toast(`Subject has been ${type === "create" ? "created" : "updated"}!`);
+        toast(
+            `Subject has been ${type === "create" ? "created" : "updated"}!`
+        );
         setOpen(false);
         router.refresh();
         }
@@ -63,6 +75,7 @@
         </h1>
 
         <div className="flex justify-between flex-wrap gap-4">
+            {/* Subject Name */}
             <InputField
             label="Subject name"
             name="name"
@@ -70,7 +83,28 @@
             register={register}
             error={errors?.name}
             />
-            {data && (
+
+            {/* Subject Code */}
+            <InputField
+            label="Subject Code"
+            name="subjectCode"
+            defaultValue={data?.subjectCode}
+            register={register}
+            error={errors?.subjectCode}
+            />
+
+            {/* Credit */}
+            <InputField
+            label="Credit"
+            name="credit"
+            type="number"
+            defaultValue={data?.credit}
+            register={register}
+            error={errors?.credit}
+            />
+
+            {/* Render Id only in update mode */}
+            {data && data.id && (
             <InputField
                 label="Id"
                 name="id"
@@ -80,6 +114,8 @@
                 hidden
             />
             )}
+
+            {/* Teachers multi-select field */}
             <div className="flex flex-col gap-2 w-full md:w-1/4">
             <label className="text-xs text-gray-500">Teachers</label>
             <select
@@ -103,9 +139,11 @@
             )}
             </div>
         </div>
+
         {state.error && (
             <span className="text-red-500">Something went wrong!</span>
         )}
+
         <button className="bg-blue-400 text-white p-2 rounded-md">
             {type === "create" ? "Create" : "Update"}
         </button>

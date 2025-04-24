@@ -8,7 +8,7 @@ import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import {
   studentSchema,
   StudentSchema,
-  teacherSchema,
+  teacherSchema, // if not needed, you can remove these
   TeacherSchema,
 } from "@/lib/formValidationSchemas";
 import { useFormState } from "react-dom";
@@ -43,6 +43,7 @@ const StudentForm = ({
 
   const [img, setImg] = useState<any>();
 
+  // Using useFormState from react-dom as requested.
   const [state, formAction] = useFormState(
     type === "create" ? createStudent : updateStudent,
     {
@@ -51,10 +52,11 @@ const StudentForm = ({
     }
   );
 
-  const onSubmit = handleSubmit((data) => {
+  const onSubmit = handleSubmit((formData) => {
     console.log("hello");
-    console.log(data);
-    formAction({ ...data, img: img?.secure_url });
+    console.log(formData);
+    // Append uploaded image URL, if available
+    formAction({ ...formData, img: img?.secure_url });
   });
 
   const router = useRouter();
@@ -67,6 +69,7 @@ const StudentForm = ({
     }
   }, [state, router, type, setOpen]);
 
+  // relatedData should supply available grades and classes.
   const { grades, classes } = relatedData;
 
   return (
@@ -101,9 +104,11 @@ const StudentForm = ({
           error={errors?.password}
         />
       </div>
+
       <span className="text-xs text-gray-400 font-medium">
         Personal Information
       </span>
+      {/* Cloudinary Upload Widget */}
       <CldUploadWidget
         uploadPreset="school"
         onSuccess={(result, { widget }) => {
@@ -123,6 +128,7 @@ const StudentForm = ({
           );
         }}
       </CldUploadWidget>
+
       <div className="flex justify-between flex-wrap gap-4">
         <InputField
           label="First Name"
@@ -162,7 +168,9 @@ const StudentForm = ({
         <InputField
           label="Birthday"
           name="birthday"
-          defaultValue={data?.birthday.toISOString().split("T")[0]}
+          defaultValue={
+            data?.birthday ? data.birthday.toISOString().split("T")[0] : ""
+          }
           register={register}
           error={errors.birthday}
           type="date"
@@ -234,9 +242,7 @@ const StudentForm = ({
                 _count: { students: number };
               }) => (
                 <option value={classItem.id} key={classItem.id}>
-                  ({classItem.name} -{" "}
-                  {classItem._count.students + "/" + classItem.capacity}{" "}
-                  Capacity)
+                  ({classItem.name} - {classItem._count.students}/{classItem.capacity} Capacity)
                 </option>
               )
             )}

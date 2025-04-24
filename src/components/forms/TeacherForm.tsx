@@ -1,4 +1,4 @@
-  "use client";
+"use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -6,7 +6,7 @@ import InputField from "../InputField";
 import Image from "next/image";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { teacherSchema, TeacherSchema } from "@/lib/formValidationSchemas";
-import { useFormState } from "react-dom";
+import { useFormState } from "react-dom"; // using react-dom as requested
 import { createTeacher, updateTeacher } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
@@ -23,16 +23,13 @@ const TeacherForm = ({
   setOpen: Dispatch<SetStateAction<boolean>>;
   relatedData?: any;
 }) => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<TeacherSchema>({
+  const { register, handleSubmit, formState: { errors } } = useForm<TeacherSchema>({
     resolver: zodResolver(teacherSchema),
   });
 
   const [img, setImg] = useState<any>();
 
+  // Using useFormState from react-dom as requested.
   const [state, formAction] = useFormState(
     type === "create" ? createTeacher : updateTeacher,
     {
@@ -99,42 +96,42 @@ const TeacherForm = ({
           name="name"
           defaultValue={data?.name}
           register={register}
-          error={errors.name}
+          error={errors?.name}
         />
         <InputField
           label="Last Name"
           name="surname"
           defaultValue={data?.surname}
           register={register}
-          error={errors.surname}
+          error={errors?.surname}
         />
         <InputField
           label="Phone"
           name="phone"
           defaultValue={data?.phone}
           register={register}
-          error={errors.phone}
+          error={errors?.phone}
         />
         <InputField
           label="Address"
           name="address"
           defaultValue={data?.address}
           register={register}
-          error={errors.address}
+          error={errors?.address}
         />
         <InputField
           label="Blood Type"
           name="bloodType"
           defaultValue={data?.bloodType}
           register={register}
-          error={errors.bloodType}
+          error={errors?.bloodType}
         />
         <InputField
           label="Birthday"
           name="birthday"
-          defaultValue={data?.birthday.toISOString().split("T")[0]}
+          defaultValue={data?.birthday ? new Date(data.birthday).toISOString().split("T")[0] : ""}
           register={register}
-          error={errors.birthday}
+          error={errors?.birthday}
           type="date"
         />
         {data && (
@@ -196,7 +193,7 @@ const TeacherForm = ({
                 className="text-xs text-gray-500 flex items-center gap-2 cursor-pointer"
                 onClick={() => open()}
               >
-                <Image src="/upload.png" alt="" width={28} height={28} />
+                <Image src="/upload.png" alt="Upload" width={28} height={28} />
                 <span>Upload a photo</span>
               </div>
             );

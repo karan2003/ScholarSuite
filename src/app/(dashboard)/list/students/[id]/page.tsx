@@ -5,7 +5,7 @@ import Performance from "@/components/performance";
 import StudentAttendanceCard from "@/components/StudentAttendanceCard";
 import prisma from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { Class, Student } from "@prisma/client";
+import { Class, Grade, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -16,17 +16,18 @@ const SingleStudentPage = async ({
 }: {
   params: { id: string };
 }) => {
-  const { sessionClaims } =await auth();
+  const { sessionClaims } = await auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
 
-  const student:
-    | (Student & {
-        class: Class & { _count: { lessons: number } };
-      })
-    | null = await prisma.student.findUnique({
+  // Fetch student with related class, grade, and lesson count.
+  const student: (Student & {
+    class: Class & { _count: { lessons: number } };
+    grade: Grade;
+  }) | null = await prisma.student.findUnique({
     where: { id },
     include: {
       class: { include: { _count: { select: { lessons: true } } } },
+      grade: true,
     },
   });
 
@@ -34,18 +35,48 @@ const SingleStudentPage = async ({
     return notFound();
   }
 
+  // Query all results for this student to compute total credits earned.
+  const studentResults = await prisma.result.findMany({
+    where: { studentId: id },
+    include: {
+      exam: {
+        include: {
+          lesson: {
+            select: { subject: { select: { credit: true } } },
+          },
+        },
+      },
+      assignment: {
+        include: {
+          lesson: {
+            select: { subject: { select: { credit: true } } },
+          },
+        },
+      },
+    },
+  });
+
+  let totalCreditsEarned = 0;
+  for (const res of studentResults) {
+    if (res.exam && res.exam.lesson.subject.credit) {
+      totalCreditsEarned += res.exam.lesson.subject.credit;
+    } else if (res.assignment && res.assignment.lesson.subject.credit) {
+      totalCreditsEarned += res.assignment.lesson.subject.credit;
+    }
+  }
+
   return (
     <div className="flex-1 p-4 flex flex-col gap-4 xl:flex-row">
-      {/* LEFT */}
+      {/* LEFT COLUMN */}
       <div className="w-full xl:w-2/3">
-        {/* TOP */}
+        {/* TOP: Student Info and Small Cards */}
         <div className="flex flex-col lg:flex-row gap-4">
-          {/* USER INFO CARD */}
+          {/* User Info Card */}
           <div className="bg-lamaSky py-6 px-4 rounded-md flex-1 flex gap-4">
             <div className="w-1/3">
               <Image
                 src={student.img || "/noAvatar.png"}
-                alt=""
+                alt="Student Avatar"
                 width={144}
                 height={144}
                 className="w-36 h-36 rounded-full object-cover"
@@ -60,38 +91,52 @@ const SingleStudentPage = async ({
                   <FormContainer table="student" type="update" data={student} />
                 )}
               </div>
-              <p className="text-sm text-gray-500">
-                {student.address}
-              </p>
-              <div className="flex items-center justify-between gap-2 flex-wrap text-xs font-medium">
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
-                  <Image src="/blood.png" alt="" width={14} height={14} />
+              <p className="text-sm text-gray-500">{student.address}</p>
+              <div className="flex flex-wrap gap-2 text-xs font-medium">
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="/blood.png"
+                    alt="Blood Type"
+                    width={14}
+                    height={14}
+                  />
                   <span>{student.bloodType}</span>
                 </div>
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
-                  <Image src="/date.png" alt="" width={14} height={14} />
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="/date.png"
+                    alt="Birthday"
+                    width={14}
+                    height={14}
+                  />
                   <span>
                     {new Intl.DateTimeFormat("en-GB").format(student.birthday)}
                   </span>
                 </div>
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
-                  <Image src="/mail.png" alt="" width={14} height={14} />
+                <div className="flex items-center gap-2">
+                  <Image src="/mail.png" alt="Email" width={14} height={14} />
                   <span>{student.email || "-"}</span>
                 </div>
-                <div className="w-full md:w-1/3 lg:w-full 2xl:w-1/3 flex items-center gap-2">
-                  <Image src="/phone.png" alt="" width={14} height={14} />
+                <div className="flex items-center gap-2">
+                  <Image
+                    src="/phone.png"
+                    alt="Phone"
+                    width={14}
+                    height={14}
+                  />
                   <span>{student.phone || "-"}</span>
                 </div>
               </div>
             </div>
           </div>
-          {/* SMALL CARDS */}
-          <div className="flex-1 flex gap-4 justify-between flex-wrap">
-            {/* CARD */}
-            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
+
+          {/* Small Cards Section (use a grid for proper alignment) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+            {/* Attendance Card */}
+            <div className="bg-white p-4 rounded-md flex items-center gap-4">
               <Image
                 src="/singleAttendance.png"
-                alt=""
+                alt="Attendance"
                 width={24}
                 height={24}
                 className="w-6 h-6"
@@ -100,61 +145,75 @@ const SingleStudentPage = async ({
                 <StudentAttendanceCard id={student.id} />
               </Suspense>
             </div>
-            {/* CARD */}
-            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
+            {/* Grade Card */}
+            <div className="bg-white p-4 rounded-md flex items-center gap-4">
               <Image
                 src="/singleBranch.png"
-                alt=""
+                alt="Grade"
                 width={24}
                 height={24}
                 className="w-6 h-6"
               />
-              <div className="">
-                <h1 className="text-xl font-semibold">
-                  {student.class.name.charAt(0)}th
-                </h1>
+              <div>
+                <h1 className="text-xl font-semibold">{student.grade.level}</h1>
                 <span className="text-sm text-gray-400">Grade</span>
               </div>
             </div>
-            {/* CARD */}
-            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
+            {/* Lessons Card */}
+            <div className="bg-white p-4 rounded-md flex items-center gap-4">
               <Image
                 src="/singleLesson.png"
-                alt=""
+                alt="Lessons"
                 width={24}
                 height={24}
                 className="w-6 h-6"
               />
-              <div className="">
+              <div>
                 <h1 className="text-xl font-semibold">
                   {student.class._count.lessons}
                 </h1>
                 <span className="text-sm text-gray-400">Lessons</span>
               </div>
             </div>
-            {/* CARD */}
-            <div className="bg-white p-4 rounded-md flex gap-4 w-full md:w-[48%] xl:w-[45%] 2xl:w-[48%]">
+            {/* Class Card */}
+            <div className="bg-white p-4 rounded-md flex items-center gap-4">
               <Image
                 src="/singleClass.png"
-                alt=""
+                alt="Class"
                 width={24}
                 height={24}
                 className="w-6 h-6"
               />
-              <div className="">
+              <div>
                 <h1 className="text-xl font-semibold">{student.class.name}</h1>
                 <span className="text-sm text-gray-400">Class</span>
               </div>
             </div>
           </div>
+
+          {/* Credits Summary Cards using a two-column grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white p-4 rounded-md flex flex-col gap-2">
+              <h1 className="text-xl font-semibold">Total Credits Earned</h1>
+              <span className="text-sm text-gray-400">{totalCreditsEarned}</span>
+            </div>
+            <div className="bg-white p-4 rounded-md flex flex-col gap-2">
+              <h1 className="text-xl font-semibold">Credit Deficiency</h1>
+              <span className="text-sm text-gray-400">
+                {student.creditDeficiency}
+              </span>
+            </div>
+          </div>
         </div>
-        {/* BOTTOM */}
+
+        {/* BOTTOM: Schedule */}
         <div className="mt-4 bg-white rounded-md p-4 h-[800px]">
           <h1>Student&apos;s Schedule</h1>
           <BigCalendarContainer type="classId" id={student.class.id} />
         </div>
       </div>
-      {/* RIGHT */}
+
+      {/* RIGHT COLUMN */}
       <div className="w-full xl:w-1/3 flex flex-col gap-4">
         <div className="bg-white p-4 rounded-md">
           <h1 className="text-xl font-semibold">Shortcuts</h1>

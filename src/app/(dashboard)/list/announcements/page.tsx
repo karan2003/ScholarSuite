@@ -8,32 +8,22 @@ import { Announcement, Class, Prisma } from "@prisma/client";
 import Image from "next/image";
 import { auth } from "@clerk/nextjs/server";
 
-
 type AnnouncementList = Announcement & { class: Class };
+
 const AnnouncementListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-  
-  const { userId, sessionClaims } =await auth();
+  const { userId, sessionClaims } = await auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
   const currentUserId = userId;
-  
+
+  // Define the table columns.
   const columns = [
-    {
-      header: "Title",
-      accessor: "title",
-    },
-    {
-      header: "Class",
-      accessor: "class",
-    },
-    {
-      header: "Date",
-      accessor: "date",
-      className: "  md:table-cell",
-    },
+    { header: "Title", accessor: "title" },
+    { header: "Class", accessor: "class" },
+    { header: "Date", accessor: "date", className: "md:table-cell" },
     ...(role === "admin"
       ? [
           {
@@ -43,7 +33,8 @@ const AnnouncementListPage = async ({
         ]
       : []),
   ];
-  
+
+  // Render a row for each announcement.
   const renderRow = (item: AnnouncementList) => (
     <tr
       key={item.id}
@@ -51,7 +42,7 @@ const AnnouncementListPage = async ({
     >
       <td className="flex items-center gap-4 p-4">{item.title}</td>
       <td>{item.class?.name || "-"}</td>
-      <td className="  md:table-cell">
+      <td className="md:table-cell">
         {new Intl.DateTimeFormat("en-US").format(item.date)}
       </td>
       <td>
@@ -66,14 +57,13 @@ const AnnouncementListPage = async ({
       </td>
     </tr>
   );
-  const { page, ...queryParams } = searchParams;
 
+  // Process URL parameters for pagination and filtering.
+  const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
-  // URL PARAMS CONDITION
-
+  // Build a basic query.
   const query: Prisma.AnnouncementWhereInput = {};
-
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
@@ -88,8 +78,8 @@ const AnnouncementListPage = async ({
     }
   }
 
-  // ROLE CONDITIONS
-
+  // ROLE CONDITIONS: Show announcements that are public (classId: null) or those linked to classes
+  // that match the role-specific criteria.
   const roleConditions = {
     teacher: { lessons: { some: { teacherId: currentUserId! } } },
     student: { students: { some: { id: currentUserId! } } },
@@ -98,17 +88,13 @@ const AnnouncementListPage = async ({
 
   query.OR = [
     { classId: null },
-    {
-      class: roleConditions[role as keyof typeof roleConditions] || {},
-    },
+    { class: roleConditions[role as keyof typeof roleConditions] || {} },
   ];
 
   const [data, count] = await prisma.$transaction([
     prisma.announcement.findMany({
       where: query,
-      include: {
-        class: true,
-      },
+      include: { class: true },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
@@ -117,19 +103,17 @@ const AnnouncementListPage = async ({
 
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
-      {/* TOP */}
+      {/* TOP - Table Header */}
       <div className="flex items-center justify-between">
-        <h1 className="  md:block text-lg font-semibold">
-          All Announcements
-        </h1>
+        <h1 className="md:block text-lg font-semibold">All Announcements</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
           <div className="flex items-center gap-4 self-end">
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/filter.png" alt="" width={14} height={14} />
+              <Image src="/filter.png" alt="Filter" width={14} height={14} />
             </button>
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
+              <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
             {role === "admin" && (
               <FormContainer table="announcement" type="create" />

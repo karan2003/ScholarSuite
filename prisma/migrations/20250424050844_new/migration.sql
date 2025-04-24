@@ -29,6 +29,7 @@ CREATE TABLE "Student" (
     "classId" INTEGER NOT NULL,
     "gradeId" INTEGER NOT NULL,
     "birthday" TIMESTAMP(3) NOT NULL,
+    "earnedCredits" INTEGER NOT NULL DEFAULT 0,
 
     CONSTRAINT "Student_pkey" PRIMARY KEY ("id")
 );
@@ -69,6 +70,7 @@ CREATE TABLE "Parent" (
 CREATE TABLE "Grade" (
     "id" SERIAL NOT NULL,
     "level" INTEGER NOT NULL,
+    "requiredCredits" INTEGER NOT NULL,
 
     CONSTRAINT "Grade_pkey" PRIMARY KEY ("id")
 );
@@ -88,6 +90,8 @@ CREATE TABLE "Class" (
 CREATE TABLE "Subject" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
+    "subjectCode" TEXT NOT NULL,
+    "credits" INTEGER NOT NULL,
 
     CONSTRAINT "Subject_pkey" PRIMARY KEY ("id")
 );
@@ -99,6 +103,7 @@ CREATE TABLE "Lesson" (
     "day" "Day" NOT NULL,
     "startTime" TIMESTAMP(3) NOT NULL,
     "endTime" TIMESTAMP(3) NOT NULL,
+    "subjectCode" TEXT NOT NULL,
     "subjectId" INTEGER NOT NULL,
     "classId" INTEGER NOT NULL,
     "teacherId" TEXT NOT NULL,
@@ -112,6 +117,7 @@ CREATE TABLE "Exam" (
     "title" TEXT NOT NULL,
     "startTime" TIMESTAMP(3) NOT NULL,
     "endTime" TIMESTAMP(3) NOT NULL,
+    "subjectCode" TEXT NOT NULL,
     "lessonId" INTEGER NOT NULL,
 
     CONSTRAINT "Exam_pkey" PRIMARY KEY ("id")
@@ -123,6 +129,7 @@ CREATE TABLE "Assignment" (
     "title" TEXT NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
     "dueDate" TIMESTAMP(3) NOT NULL,
+    "subjectCode" TEXT NOT NULL,
     "lessonId" INTEGER NOT NULL,
 
     CONSTRAINT "Assignment_pkey" PRIMARY KEY ("id")
@@ -132,6 +139,8 @@ CREATE TABLE "Assignment" (
 CREATE TABLE "Result" (
     "id" SERIAL NOT NULL,
     "score" INTEGER NOT NULL,
+    "credits" INTEGER NOT NULL,
+    "subjectCode" TEXT NOT NULL,
     "examId" INTEGER,
     "assignmentId" INTEGER,
     "studentId" TEXT NOT NULL,
@@ -176,9 +185,7 @@ CREATE TABLE "Announcement" (
 -- CreateTable
 CREATE TABLE "_SubjectToTeacher" (
     "A" INTEGER NOT NULL,
-    "B" TEXT NOT NULL,
-
-    CONSTRAINT "_SubjectToTeacher_AB_pkey" PRIMARY KEY ("A","B")
+    "B" TEXT NOT NULL
 );
 
 -- CreateIndex
@@ -219,6 +226,12 @@ CREATE UNIQUE INDEX "Class_name_key" ON "Class"("name");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Subject_name_key" ON "Subject"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Subject_subjectCode_key" ON "Subject"("subjectCode");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_SubjectToTeacher_AB_unique" ON "_SubjectToTeacher"("A", "B");
 
 -- CreateIndex
 CREATE INDEX "_SubjectToTeacher_B_index" ON "_SubjectToTeacher"("B");

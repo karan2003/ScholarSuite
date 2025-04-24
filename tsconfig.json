@@ -12,10 +12,15 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "target": "ES2020",
+    "skipLibCheck": true,
+    "downlevelIteration": true,
+    "outDir": "./dist",
     "plugins": [
       {
         "name": "next"
       }
+      
     ],
     "paths": {
       "@/*": ["./src/*"]

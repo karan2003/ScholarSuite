@@ -13,6 +13,7 @@ import { clerkClient } from "@clerk/nextjs/server";
 
 type CurrentState = { success: boolean; error: boolean };
 
+// Create a subject, including name, subjectCode, credit, and connecting teachers.
 export const createSubject = async (
   currentState: CurrentState,
   data: SubjectSchema
@@ -21,12 +22,14 @@ export const createSubject = async (
     await prisma.subject.create({
       data: {
         name: data.name,
+        subjectCode: data.subjectCode, // included now
+        credit: data.credit,           // included now
         teachers: {
           connect: data.teachers.map((teacherId) => ({ id: teacherId })),
         },
       },
     });
-
+    // Optionally revalidate the path:
     // revalidatePath("/list/subjects");
     return { success: true, error: false };
   } catch (err) {
@@ -35,6 +38,7 @@ export const createSubject = async (
   }
 };
 
+// Update a subject, including updating the subjectCode and credit.
 export const updateSubject = async (
   currentState: CurrentState,
   data: SubjectSchema
@@ -46,12 +50,14 @@ export const updateSubject = async (
       },
       data: {
         name: data.name,
+        subjectCode: data.subjectCode, // updated field included
+        credit: data.credit,           // updated field included
         teachers: {
           set: data.teachers.map((teacherId) => ({ id: teacherId })),
         },
       },
     });
-
+    // Optionally revalidate the path:
     // revalidatePath("/list/subjects");
     return { success: true, error: false };
   } catch (err) {
@@ -60,6 +66,7 @@ export const updateSubject = async (
   }
 };
 
+// Delete a subject by its id. Here we parse the id from the submitted FormData.
 export const deleteSubject = async (
   currentState: CurrentState,
   data: FormData
@@ -71,7 +78,7 @@ export const deleteSubject = async (
         id: parseInt(id),
       },
     });
-
+    // Optionally revalidate the path:
     // revalidatePath("/list/subjects");
     return { success: true, error: false };
   } catch (err) {
@@ -468,6 +475,76 @@ export const deleteExam = async (
     return { success: true, error: false };
   } catch (err) {
     console.log(err);
+    return { success: false, error: true };
+  }
+};
+
+
+export const createResult = async (
+  currentState: CurrentState,
+  data: ResultSchema
+) => {
+  try {
+    await prisma.result.create({
+      data: {
+        score: data.score,
+        examId: data.examId,        // optional; only one of examId or assignmentId is expected
+        assignmentId: data.assignmentId, // optional
+        studentId: data.studentId,
+        subjectId: data.subjectId,
+      },
+    });
+    // Optionally, revalidate the path:
+    // revalidatePath("/list/results");
+    return { success: true, error: false };
+  } catch (err) {
+    console.error(err);
+    return { success: false, error: true };
+  }
+};
+
+export const updateResult = async (
+  currentState: CurrentState,
+  data: ResultSchema
+) => {
+  try {
+    await prisma.result.update({
+      where: {
+        id: data.id, // ensure data.id is present when updating
+      },
+      data: {
+        score: data.score,
+        examId: data.examId,
+        assignmentId: data.assignmentId,
+        studentId: data.studentId,
+        subjectId: data.subjectId,
+      },
+    });
+    // Optionally, revalidate the path:
+    // revalidatePath("/list/results");
+    return { success: true, error: false };
+  } catch (err) {
+    console.error(err);
+    return { success: false, error: true };
+  }
+};
+
+export const deleteResult = async (
+  currentState: CurrentState,
+  data: FormData
+) => {
+  const id = data.get("id") as string;
+  try {
+    await prisma.result.delete({
+      where: {
+        id: parseInt(id),
+      },
+    });
+    // Optionally, revalidate the path:
+    // revalidatePath("/list/results");
+    return { success: true, error: false };
+  } catch (err) {
+    console.error(err);
     return { success: false, error: true };
   }
 };

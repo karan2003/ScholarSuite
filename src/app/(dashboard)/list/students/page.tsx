@@ -2,25 +2,28 @@ import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { Class, Prisma, Student } from "@prisma/client";
+import { Class, Grade, Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
-
 import { auth } from "@clerk/nextjs/server";
 
-type StudentList = Student & { class: Class };
+// Extend Student type to include related class and grade.
+type StudentList = Student & {
+  class: Class;
+  grade: Grade;
+};
 
 const StudentListPage = async ({
   searchParams,
 }: {
   searchParams: { [key: string]: string | undefined };
 }) => {
-  const { sessionClaims } =await auth();
+  const { sessionClaims } = await auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
 
+  // Define columns for presentation.
   const columns = [
     {
       header: "Info",
@@ -29,22 +32,27 @@ const StudentListPage = async ({
     {
       header: "Student ID",
       accessor: "studentId",
-      className: "  md:table-cell",
+      className: "md:table-cell",
     },
     {
       header: "Grade",
       accessor: "grade",
-      className: "  md:table-cell",
+      className: "md:table-cell",
     },
     {
       header: "Phone",
       accessor: "phone",
-      className: "  lg:table-cell",
+      className: "lg:table-cell",
     },
     {
       header: "Address",
       accessor: "address",
-      className: "  lg:table-cell",
+      className: "lg:table-cell",
+    },
+    {
+      header: "Credit Deficiency",
+      accessor: "creditDef",
+      className: "lg:table-cell",
     },
     ...(role === "admin"
       ? [
@@ -56,28 +64,37 @@ const StudentListPage = async ({
       : []),
   ];
 
+  // Render a single row.
   const renderRow = (item: StudentList) => (
     <tr
       key={item.id}
       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
     >
+      {/* Info column: Avatar, Name and Class */}
       <td className="flex items-center gap-4 p-4">
         <Image
           src={item.img || "/noAvatar.png"}
           alt=""
           width={40}
           height={40}
-          className="xl:block w-10 h-10 rounded-full object-cover"
+          className="w-10 h-10 rounded-full object-cover"
         />
         <div className="flex flex-col">
-          <h3 className="font-semibold">{item.name}</h3>
+          <h3 className="font-semibold">{`${item.name} ${item.surname}`}</h3>
           <p className="text-xs text-gray-500">{item.class.name}</p>
         </div>
       </td>
-      <td className="  md:table-cell">{item.username}</td>
-      <td className="  md:table-cell">{item.class.name[0]}</td>
-      <td className="  md:table-cell">{item.phone}</td>
-      <td className="  md:table-cell">{item.address}</td>
+      {/* Student ID column */}
+      <td className="md:table-cell">{item.username}</td>
+      {/* Grade column */}
+      <td className="md:table-cell">{item.grade.level}</td>
+      {/* Phone column */}
+      <td className="lg:table-cell">{item.phone}</td>
+      {/* Address column */}
+      <td className="lg:table-cell">{item.address}</td>
+      {/* Credit Deficiency column */}
+      <td className="lg:table-cell">{item.creditDeficiency}</td>
+      {/* Actions column */}
       <td>
         <div className="flex items-center gap-2">
           <Link href={`/list/students/${item.id}`}>
@@ -86,9 +103,6 @@ const StudentListPage = async ({
             </button>
           </Link>
           {role === "admin" && (
-            // <button className="w-7 h-7 flex items-center justify-center rounded-full bg-lamaPurple">
-            //   <Image src="/delete.png" alt="" width={16} height={16} />
-            // </button>
             <FormContainer table="student" type="delete" id={item.id} />
           )}
         </div>
@@ -97,11 +111,9 @@ const StudentListPage = async ({
   );
 
   const { page, ...queryParams } = searchParams;
-
   const p = page ? parseInt(page) : 1;
 
-  // URL PARAMS CONDITION
-
+  // Build the URL filter query.
   const query: Prisma.StudentWhereInput = {};
 
   if (queryParams) {
@@ -109,6 +121,7 @@ const StudentListPage = async ({
       if (value !== undefined) {
         switch (key) {
           case "teacherId":
+            // Filter students whose class has at least one lesson taught by given teacher.
             query.class = {
               lessons: {
                 some: {
@@ -127,11 +140,13 @@ const StudentListPage = async ({
     }
   }
 
+  // Fetch students including related class and grade.
   const [data, count] = await prisma.$transaction([
     prisma.student.findMany({
       where: query,
       include: {
         class: true,
+        grade: true,
       },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
@@ -143,22 +158,17 @@ const StudentListPage = async ({
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       {/* TOP */}
       <div className="flex items-center justify-between">
-        <h1 className="  md:block text-lg font-semibold">All Students</h1>
+        <h1 className="md:block text-lg font-semibold">All Students</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
           <div className="flex items-center gap-4 self-end">
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/filter.png" alt="" width={14} height={14} />
+              <Image src="/filter.png" alt="Filter" width={14} height={14} />
             </button>
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              <Image src="/sort.png" alt="" width={14} height={14} />
+              <Image src="/sort.png" alt="Sort" width={14} height={14} />
             </button>
-            {role === "admin" && (
-              // <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
-              //   <Image src="/plus.png" alt="" width={14} height={14} />
-              // </button>
-              <FormContainer table="student" type="create" />
-            )}
+            {role === "admin" && <FormContainer table="student" type="create" />}
           </div>
         </div>
       </div>
