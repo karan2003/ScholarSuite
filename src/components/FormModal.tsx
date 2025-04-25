@@ -1,6 +1,13 @@
 "use client";
 
-import { deleteClass, deleteExam, deleteStudent, deleteSubject, deleteTeacher, deleteResult } from "@/lib/actions";
+import {
+  deleteClass,
+  deleteExam,
+  deleteStudent,
+  deleteSubject,
+  deleteTeacher,
+  deleteResult,
+} from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -9,7 +16,7 @@ import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
 import { FormContainerProps } from "./FormContainer";
 
-// Update the delete action map with result support
+// Updated delete action map with result support
 const deleteActionMap: { [key: string]: any } = {
   subject: deleteSubject,
   class: deleteClass,
@@ -25,7 +32,7 @@ const deleteActionMap: { [key: string]: any } = {
   announcement: undefined,
 };
 
-// Lazy load form components with result form
+// Dynamic (lazy) imports for form components
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
   loading: () => <h1>Loading...</h1>,
 });
@@ -45,7 +52,7 @@ const ResultForm = dynamic(() => import("./forms/ResultForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 
-// Form mapping with result integration
+// Mapping table names to the corresponding form components
 const forms: {
   [key: string]: (
     setOpen: Dispatch<SetStateAction<boolean>>,
@@ -63,6 +70,7 @@ const forms: {
   teacher: (setOpen, type, data, relatedData) => (
     <TeacherForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
+  // StudentForm now renders the "Required Credits" field regardless of create or update.
   student: (setOpen, type, data, relatedData) => (
     <StudentForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
@@ -83,6 +91,7 @@ const FormModal = ({
 }: FormContainerProps & { relatedData?: any }) => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  // Set icon size based on action type
   const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
   const bgColor =
     type === "create"
@@ -91,7 +100,7 @@ const FormModal = ({
       ? "bg-lamaSky"
       : "bg-lamaPurple";
 
-  // Delete form handling
+  // Delete form handling using useFormState
   const DeleteForm = () => {
     const deleteAction = deleteActionMap[table];
     const [state, formAction] = useFormState(deleteAction, { success: false });
@@ -148,7 +157,7 @@ const FormModal = ({
               />
             </button>
 
-            {/* Form content */}
+            {/* Render content based on action type */}
             {type === "delete" ? (
               <DeleteForm />
             ) : (

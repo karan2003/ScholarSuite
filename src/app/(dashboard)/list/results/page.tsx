@@ -119,8 +119,6 @@ const ResultListPage = async ({
   }
 
   // Main query: fetch paginated results.
-  // For exam: include lesson and its subject fields.
-  // For assignment: include assignment's own startDate and lesson details.
   const [resultsData, count] = await prisma.$transaction([
     prisma.result.findMany({
       where: query,
@@ -161,9 +159,6 @@ const ResultListPage = async ({
   ]);
 
   // Map the fetched data.
-  // For each result, extract the assessment (either exam or assignment).
-  // If score > 39 AND the result’s tracked subject matches the assessment's subject,
-  // then awardedCredits = subject.credit, otherwise 0.
   const mappedData = resultsData
     .map((item) => {
       const assessment = item.exam || item.assignment;
@@ -191,28 +186,47 @@ const ResultListPage = async ({
     })
     .filter((item): item is ResultList => item !== null);
 
-  // STUDENT SUMMARY: Total Credits Earned.
+  // STUDENT SUMMARY: Total Credits Earned and Required Credits.
   let totalCreditsEarned = 0;
+  let studentRequiredCredits = 0;
   if (role === "student" && currentUserId) {
+    // Fetch the student's required credits from the student record.
+    const studentRecord = await prisma.student.findUnique({
+      where: { id: currentUserId },
+      select: { requiredCredits: true },
+    });
+    studentRequiredCredits = studentRecord?.requiredCredits ?? 0;
+
+    // Fetch all results for this student.
     const allResultsForSummary = await prisma.result.findMany({
       where: { studentId: currentUserId },
       include: {
         exam: {
           include: {
-            lesson: { select: { subject: { select: { id: true, credit: true } } } },
+            lesson: {
+              select: { subject: { select: { id: true, credit: true } } },
+            },
           },
         },
         assignment: {
           include: {
-            lesson: { select: { subject: { select: { id: true, credit: true } } } },
+            lesson: {
+              select: { subject: { select: { id: true, credit: true } } },
+            },
           },
         },
         subject: { select: { id: true, credit: true } },
       },
     });
+
+    // Calculate total earned credits.
     for (const res of allResultsForSummary) {
       if (res.score > 39 && res.subject) {
-        if (res.exam && res.exam.lesson.subject && res.exam.lesson.subject.id === res.subject.id) {
+        if (
+          res.exam &&
+          res.exam.lesson.subject &&
+          res.exam.lesson.subject.id === res.subject.id
+        ) {
           totalCreditsEarned += res.exam.lesson.subject.credit;
         } else if (
           res.assignment &&
@@ -225,54 +239,34 @@ const ResultListPage = async ({
     }
   }
 
-  // DYNAMIC REQUIRED CREDITS CALCULATION:
-  // Instead of summing credits from all subjects in the class,
-  // we build a unique set of subject ids from the raw results data.
-  let dynamicRequiredCredits = 0;
-  {
-    const uniqueSubjects = new Map<number, number>();
-    for (const res of resultsData) {
-      if (res.subject && res.subject.id) {
-        if (!uniqueSubjects.has(res.subject.id)) {
-          uniqueSubjects.set(res.subject.id, res.subject.credit);
-        }
-      }
-    }
-    dynamicRequiredCredits = Array.from(uniqueSubjects.values()).reduce(
-      (sum, credit) => sum + credit,
-      0
-    );
-  }
-
-  // Alternatively, if you wish to add a +1 adjustment to required credits (if necessary),  
-  // you can do so here. For now, we'll assume no adjustment for clarity.
-  const totalDeficientCredits = Math.max(0, dynamicRequiredCredits - totalCreditsEarned);
+  // Deficient credits: compute as the difference between earned credits and required credits.
+  const totalDeficientCredits = totalCreditsEarned - studentRequiredCredits;
 
   return (
     <div className="bg-lb p-4 rounded-md flex-1 m-4 mt-0">
-    <AutoRefresh interval={30} /> 
+      <AutoRefresh interval={30} />
       {/* Summary Banner for Students */}
       {role === "student" && (
         <div className="mb-4 p-4 bg-lgr rounded-md">
           <div className="flex justify-between">
             <div>
-              <h3 className="text-lg text-gray font-semibold">Total Credits Earned:</h3>
+              <h3 className="text-lg font-semibold">Total Credits Earned:</h3>
               <p>{totalCreditsEarned}</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold">Required Credits:</h3>
-              <p>{(dynamicRequiredCredits) - 1}</p>
+              <p>{studentRequiredCredits}</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold">Total Deficient Credits:</h3>
-              <p>{(totalDeficientCredits) -1 }</p>
+              <p>{totalDeficientCredits}</p>
             </div>
           </div>
         </div>
       )}
       {/* TOP Bar */}
       <div className="flex items-center justify-between">
-      <h1 className="flex md:block text-lg font-bold text-black-500 ">All Results</h1>
+        <h1 className="flex md:block text-lg font-bold text-black-500">All Results</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
           <div className="flex items-center gap-4 self-end ">

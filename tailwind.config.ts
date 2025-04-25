@@ -25,7 +25,8 @@ const config: Config = {
         lgr:"#F1F1F2",
         db:"#003092",
         y:"#f9eac2",
-        z:"#ecfdf1"
+        z:"#ecfdf1",
+        bluebag:"#1B56FD"
       },
     },
   },

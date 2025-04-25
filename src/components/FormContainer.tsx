@@ -65,6 +65,7 @@
         }
         case "student": {
             // Student: fetch available grades and classes.
+            // The Student form will manage `requiredCredits` internally.
             const studentGrades = await prisma.grade.findMany({
             select: { id: true, level: true },
             });
@@ -110,57 +111,58 @@
             relatedData = { lessons: assignmentLessons };
             break;
         }
-        // FormContainer.txt updates for "result" case
         case "result": {
+            // For results: fetch exams and assignments (with subject and class details), available students,
+            // and also available subjects.
             const resultExams = await prisma.exam.findMany({
-                select: { 
-                    id: true, 
-                    title: true,
-                    lesson: {
-                        select: {
-                            subjectId: true,
-                            class: {
-                                select: {
-                                    id: true
-                                }
-                            }
-                        }
-                    }
+            select: {
+                id: true,
+                title: true,
+                lesson: {
+                select: {
+                    subjectId: true,
+                    class: {
+                    select: { id: true },
+                    },
                 },
+                },
+            },
             });
             const resultAssignments = await prisma.assignment.findMany({
-                select: { 
-                    id: true, 
-                    title: true,
-                    lesson: {
-                        select: {
-                            subjectId: true,
-                            class: {
-                                select: {
-                                    id: true
-                                }
-                            }
-                        }
-                    }
+            select: {
+                id: true,
+                title: true,
+                lesson: {
+                select: {
+                    subjectId: true,
+                    class: {
+                    select: { id: true },
+                    },
                 },
+                },
+            },
             });
             const resultStudents = await prisma.student.findMany({
-                where: role === "teacher" ? { 
-                    class: { 
-                        lessons: { 
-                            some: { teacherId: currentUserId } 
-                        } 
-                    } 
-                } : {},
-                select: { id: true, name: true, surname: true },
+            where:
+                role === "teacher"
+                ? {
+                    class: {
+                        lessons: {
+                        some: { teacherId: currentUserId },
+                        },
+                    },
+                    }
+                : {},
+            select: { id: true, name: true, surname: true },
+            });
+            const subjects = await prisma.subject.findMany({
+            select: { id: true, name: true },
             });
             relatedData = {
-                exams: resultExams,
-                assignments: resultAssignments,
-                students: resultStudents,
-                subjects: await prisma.subject.findMany({
-                    select: { id: true, name: true },
-                }),
+            exams: resultExams,
+            assignments: resultAssignments,
+            students: resultStudents,
+            subjects,
             };
             break;
         }
@@ -201,14 +203,8 @@
     }
 
     return (
-        <div className="">
-        <FormModal
-            table={table}
-            type={type}
-            data={data}
-            id={id}
-            relatedData={relatedData}
-        />
+        <div>
+        <FormModal table={table} type={type} data={data} id={id} relatedData={relatedData} />
         </div>
     );
     };

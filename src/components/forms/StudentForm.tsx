@@ -53,8 +53,6 @@ const StudentForm = ({
   );
 
   const onSubmit = handleSubmit((formData) => {
-    console.log("hello");
-    console.log(formData);
     // Append uploaded image URL, if available
     formAction({ ...formData, img: img?.secure_url });
   });
@@ -63,7 +61,9 @@ const StudentForm = ({
 
   useEffect(() => {
     if (state.success) {
-      toast(`Student has been ${type === "create" ? "created" : "updated"}!`);
+      toast(
+        `Student has been ${type === "create" ? "created" : "updated"}!`
+      );
       setOpen(false);
       router.refresh();
     }
@@ -192,6 +192,14 @@ const StudentForm = ({
             hidden
           />
         )}
+        {/* The Required Credits field is always rendered */}
+        <InputField
+          label="Required Credits"
+          name="requiredCredits"
+          defaultValue={data?.requiredCredits?.toString() || ""}
+          register={register}
+          error={errors?.requiredCredits}
+        />
         <div className="flex flex-col gap-2 w-full md:w-1/4">
           <label className="text-xs text-gray-500">Sex</label>
           <select

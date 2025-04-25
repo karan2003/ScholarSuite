@@ -38,13 +38,25 @@ export const teacherSchema = z.object({
 
 export type TeacherSchema = z.infer<typeof teacherSchema>;
 
+
 export const studentSchema = z.object({
   id: z.string().optional(),
-  username: z.string().min(3, { message: "Username must be at least 3 characters long!" }).max(20, { message: "Username must be at most 20 characters long!" }),
-  password: z.string().min(8, { message: "Password must be at least 8 characters long!" }).optional().or(z.literal("")),
+  username: z
+    .string()
+    .min(3, { message: "Username must be at least 3 characters long!" })
+    .max(20, { message: "Username must be at most 20 characters long!" }),
+  password: z
+    .string()
+    .min(8, { message: "Password must be at least 8 characters long!" })
+    .optional()
+    .or(z.literal("")),
   name: z.string().min(1, { message: "First name is required!" }),
   surname: z.string().min(1, { message: "Last name is required!" }),
-  email: z.string().email({ message: "Invalid email address!" }).optional().or(z.literal("")),
+  email: z
+    .string()
+    .email({ message: "Invalid email address!" })
+    .optional()
+    .or(z.literal("")),
   phone: z.string().optional(),
   address: z.string(),
   img: z.string().optional(),
@@ -54,6 +66,9 @@ export const studentSchema = z.object({
   gradeId: z.coerce.number().min(1, { message: "Grade is required!" }),
   classId: z.coerce.number().min(1, { message: "Class is required!" }),
   parentId: z.string().min(1, { message: "Parent Id is required!" }),
+  requiredCredits: z.coerce.number().min(1, {
+    message: "Required Credits must be at least 1!",
+  }),
 });
 
 export type StudentSchema = z.infer<typeof studentSchema>;

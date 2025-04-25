@@ -27,16 +27,17 @@ const CombinedPage = () => {
   return (
     <div>
       {/* LANDING PAGE */}
-      <div className="relative min-h-screen overflow- ">
+      <div className="relative min-h-screen overflow-hidden ">
         {/* Local Background Image with Dark Overlay */}
         <div className="absolute inset-0">
-          <Image
-            src="/bg.png"
-            alt="Background"
-            layout="fill"
-            objectFit="cover"
-            priority
-          />
+        <Image
+          src="/bg.jpg"
+          alt="Background"
+          fill
+          priority
+          style={{ objectFit: "fill" }}
+        />
+
           {/* Increase overlay opacity for proper contrast against an olive-green bg */}
           <div className="absolute inset-0 opacity-75"></div>
         </div>
@@ -55,20 +56,32 @@ const CombinedPage = () => {
             </div>
             {/* Central Hero Content inside a 3D-style box */}
             <div className="w-full md:w-1/2 px-4">
-              <div className="card-3d bg-white/20 p-8 rounded-lg shadow-2xl backdrop-blur-sm transition-transform duration-300 hover:scale-105">
-                <div className="mb-6">
-                  <Image
-                    src="/logo.png"
-                    alt="ScholarSuite Logo"
-                    width={100}
-                    height={100}
-                    className="mx-auto transition-transform duration-300 hover:scale-110"
-                  />
+              <div className="card-3d bg-lamaPurpleLight/40 p-8 rounded-lg shadow-2xl backdrop-blur-sm transition-transform duration-300 hover:scale-105">
+              <div className="mb-6 flex justify-center">
+                {/* Outer container adds perspective for a 3D effect */}
+                <div className="w-[100px] h-[100px]" style={{ perspective: '800px' }}>
+                  {/* Inner container rotates the logo */}
+                  <div
+                    className="inline-block origin-center"
+                    style={{
+                      transformStyle: 'preserve-3d',
+                      animation: 'globe-spin 10s linear infinite'
+                    }}
+                  >
+                    <Image
+                      src="/logo.png"
+                      alt="ScholarSuite Logo"
+                      width={100}
+                      height={100}
+                    />
+                  </div>
                 </div>
-                <h1 className="text-5xl text-y md:text-6xl font-bold mb-4 tracking-widest drop-shadow-lg animate-slideInDown animate-textPulse">
+              </div>
+
+                <h1 className="text-5xl text-bluebag md:text-6xl font-bold mb-4 tracking-widest drop-shadow-lg animate-slideInDown animate-textPulse">
                   ScholarSuite
                 </h1>
-                <p className="text-2xl text-z md:text-3xl font-medium mb-8 max-w-3xl mx-auto drop-shadow-md animate-slideInDown">
+                <p className="text-2xl text-tb md:text-3xl font-medium mb-8 max-w-3xl mx-auto drop-shadow-md animate-slideInDown">
                   Transforming Campus Administration &amp; Elevating Academic Excellence
                 </p>
                 <p className="max-w-2xl mb-10 text-lg leading-relaxed mx-auto drop-shadow-md animate-slideInUp">
@@ -99,13 +112,13 @@ const CombinedPage = () => {
           {/* ABOUT SECTION */}
           <section className="py-16 px-4">
             <div className="max-w-5xl mx-auto text-center">
-              <h2 className="text-3xl font-bold mb-8 text-white">About ScholarSuite</h2>
-              <p className="mb-6 text-lg text-white">
+              <h2 className="text-3xl font-bold mb-8 text-bluebag">About ScholarSuite</h2>
+              <p className="mb-6 text-lg text-black">
                 ScholarSuite replaces outdated manual systems by centralizing data management and
                 automating critical administrative tasks. Its robust three-tier architecture empowers
                 institutions with real‑time, accurate information and seamless integration.
               </p>
-              <p className="text-lg text-white">
+              <p className="text-lg text-black">
                 Designed for administrators, teachers, students, and parents, ScholarSuite isn’t just a system —
                 it’s a gateway to academic excellence.
               </p>
@@ -184,8 +197,8 @@ const CombinedPage = () => {
                 <Image
                   src="/logo.png"
                   alt="ScholarSuite Logo"
-                  width={32}
-                  height={32}
+                  width={40}
+                  height={40}
                   className="w-8 h-8 transition-transform duration-300 hover:scale-110"
                 />
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-600 bg-clip-text text-transparent">
@@ -331,6 +344,15 @@ const CombinedPage = () => {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.8; }
         }
+              @keyframes globe-spin {
+          from {
+            transform: rotateY(0deg);
+          }
+          to {
+            transform: rotateY(360deg);
+          }
+        }
+
         .animate-slideInDown {
           animation: slideInDown 0.8s ease-out forwards;
         }

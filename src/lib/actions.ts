@@ -271,13 +271,14 @@ export const createStudent = async (
     if (classItem && classItem.capacity === classItem._count.students) {
       return { success: false, error: true };
     }
+
     const clerk = await clerkClient();
     const user = await clerk.users.createUser({
       username: data.username,
       password: data.password,
       firstName: data.name,
       lastName: data.surname,
-      publicMetadata:{role:"student"}
+      publicMetadata: { role: "student" },
     });
 
     await prisma.student.create({
@@ -296,6 +297,7 @@ export const createStudent = async (
         gradeId: data.gradeId,
         classId: data.classId,
         parentId: data.parentId,
+        requiredCredits: data.requiredCredits, // New field added
       },
     });
 
@@ -342,6 +344,7 @@ export const updateStudent = async (
         gradeId: data.gradeId,
         classId: data.classId,
         parentId: data.parentId,
+        requiredCredits: data.requiredCredits, // New field added
       },
     });
     // revalidatePath("/list/students");
@@ -374,7 +377,6 @@ export const deleteStudent = async (
     return { success: false, error: true };
   }
 };
-
 export const createExam = async (
   currentState: CurrentState,
   data: ExamSchema

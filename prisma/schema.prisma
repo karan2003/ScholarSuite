@@ -157,6 +157,8 @@ model Student {
   results          Result[]
 
   creditDeficiency Int          @default(0)
+  requiredCredits  Int          
+
 }
 
 model Result {
