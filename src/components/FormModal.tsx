@@ -7,6 +7,8 @@ import {
   deleteSubject,
   deleteTeacher,
   deleteResult,
+  deleteLesson,
+  deleteAssignment,
 } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -16,7 +18,7 @@ import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
 import { FormContainerProps } from "./FormContainer";
 
-// Updated delete action map with result support
+// Updated delete action map with support for lessons and assignments.
 const deleteActionMap: { [key: string]: any } = {
   subject: deleteSubject,
   class: deleteClass,
@@ -24,15 +26,15 @@ const deleteActionMap: { [key: string]: any } = {
   student: deleteStudent,
   exam: deleteExam,
   result: deleteResult,
+  lesson: deleteLesson,
   parent: undefined,
-  lesson: undefined,
-  assignment: undefined,
+  assignment: deleteAssignment,
   attendance: undefined,
   event: undefined,
   announcement: undefined,
 };
 
-// Dynamic (lazy) imports for form components
+// Dynamic (lazy) imports for form components.
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
   loading: () => <h1>Loading...</h1>,
 });
@@ -51,8 +53,14 @@ const ExamForm = dynamic(() => import("./forms/ExamForm"), {
 const ResultForm = dynamic(() => import("./forms/ResultForm"), {
   loading: () => <h1>Loading...</h1>,
 });
+const LessonForm = dynamic(() => import("./forms/LessonForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const AssignmentForm = dynamic(() => import("./forms/AssignmentForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
 
-// Mapping table names to the corresponding form components
+// Mapping table names to the corresponding form components.
 const forms: {
   [key: string]: (
     setOpen: Dispatch<SetStateAction<boolean>>,
@@ -70,7 +78,6 @@ const forms: {
   teacher: (setOpen, type, data, relatedData) => (
     <TeacherForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
-  // StudentForm now renders the "Required Credits" field regardless of create or update.
   student: (setOpen, type, data, relatedData) => (
     <StudentForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
@@ -79,6 +86,12 @@ const forms: {
   ),
   result: (setOpen, type, data, relatedData) => (
     <ResultForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  ),
+  lesson: (setOpen, type, data, relatedData) => (
+    <LessonForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  ),
+  assignment: (setOpen, type, data, relatedData) => (
+    <AssignmentForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
 };
 
@@ -91,7 +104,7 @@ const FormModal = ({
 }: FormContainerProps & { relatedData?: any }) => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  // Set icon size based on action type
+  // Set icon size based on action type.
   const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
   const bgColor =
     type === "create"
@@ -100,7 +113,7 @@ const FormModal = ({
       ? "bg-lamaSky"
       : "bg-lamaPurple";
 
-  // Delete form handling using useFormState
+  // Delete form handling using useFormState.
   const DeleteForm = () => {
     const deleteAction = deleteActionMap[table];
     const [state, formAction] = useFormState(deleteAction, { success: false });
@@ -119,10 +132,7 @@ const FormModal = ({
         <p className="text-center font-medium">
           Are you sure you want to delete this {table}? This action cannot be undone.
         </p>
-        <button
-          type="submit"
-          className="bg-red-600 text-white px-4 py-2 rounded-md self-center"
-        >
+        <button type="submit" className="bg-red-600 text-white px-4 py-2 rounded-md self-center">
           Confirm Delete
         </button>
       </form>
@@ -148,20 +158,14 @@ const FormModal = ({
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
               onClick={() => setOpen(false)}
             >
-              <Image
-                src="/close.png"
-                alt="Close"
-                width={20}
-                height={20}
-                className="invert"
-              />
+              <Image src="/close.png" alt="Close" width={20} height={20} className="invert" />
             </button>
 
             {/* Render content based on action type */}
             {type === "delete" ? (
               <DeleteForm />
             ) : (
-              forms[table]?.(setOpen, type, data, relatedData) || (
+              forms[table]?.(setOpen, type, data, relatedData ?? {}) || (
                 <div>Form not available for {table}</div>
               )
             )}

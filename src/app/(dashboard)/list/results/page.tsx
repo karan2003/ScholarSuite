@@ -243,11 +243,11 @@ const ResultListPage = async ({
   const totalDeficientCredits = totalCreditsEarned - studentRequiredCredits;
 
   return (
-    <div className="bg-lb p-4 rounded-md flex-1 m-4 mt-0">
+    <div className="bg-lamaSkyLight p-4 rounded-md flex-1 m-4 mt-0">
       <AutoRefresh interval={30} />
       {/* Summary Banner for Students */}
       {role === "student" && (
-        <div className="mb-4 p-4 bg-lgr rounded-md">
+        <div className="mb-4 p-4 bg-lb rounded-md">
           <div className="flex justify-between">
             <div>
               <h3 className="text-lg font-semibold">Total Credits Earned:</h3>

@@ -156,7 +156,7 @@ model Student {
   attendances      Attendance[]
   results          Result[]
 
-  creditDeficiency Int          @default(0)
+  creditDeficiency Int      @default(0)
   requiredCredits  Int          
 
 }

@@ -98,3 +98,45 @@ export const resultSchema = z.object({
   message: "Either exam or assignment must be selected",
   path: ["examId"]
 });
+
+export const lessonSchema = z
+  .object({
+    id: z.coerce.number().optional(),
+    name: z.string().min(1, { message: "Lesson name is required!" }),
+    day: z.enum(
+      ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY"],
+      { message: "Day is required!" }
+    ),
+    startTime: z.coerce.date({ message: "Start time is required!" }),
+    endTime: z.coerce.date({ message: "End time is required!" }),
+    subjectId: z
+      .coerce.number({ required_error: "Subject is required!" })
+      .min(1, { message: "Subject must be selected!" }),
+    teacherId: z.string().min(1, { message: "Teacher is required!" }),
+    classId: z
+      .coerce.number({ required_error: "Class is required!" })
+      .min(1, { message: "Class must be selected!" }),
+  })
+  // Optional: Uncomment the below refinement to ensure startTime is before endTime.
+  // .refine(data => data.startTime < data.endTime, {
+  //   message: "Start time must be before end time",
+  //   path: ["startTime"],
+  // });
+
+export type LessonSchema = z.infer<typeof lessonSchema>;
+
+export const assignmentSchema = z
+  .object({
+    id: z.coerce.number().optional(),
+    title: z.string().min(1, { message: "Assignment title is required!" }),
+    startDate: z.coerce.date({ message: "Start date is required!" }),
+    dueDate: z.coerce.date({ message: "Due date is required!" }),
+    lessonId: z.coerce.number({ required_error: "Lesson is required!" }).min(1, { message: "Lesson must be selected!" }),
+  })
+  .refine((data) => data.startDate < data.dueDate, {
+    message: "Start date must be before due date",
+    path: ["startDate"],
+  });
+export type AssignmentSchema = z.infer<typeof assignmentSchema>;
+
+

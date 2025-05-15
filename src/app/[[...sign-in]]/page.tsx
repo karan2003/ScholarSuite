@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
@@ -11,10 +11,12 @@ const CombinedPage = () => {
   const { user } = useUser();
   const router = useRouter();
   const loginRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(false);
 
   // Redirect authenticated users if role metadata exists
   useEffect(() => {
     if (user && user.publicMetadata.role) {
+      setLoading(true);
       router.push(`/${user.publicMetadata.role}`);
     }
   }, [user, router]);
@@ -30,13 +32,13 @@ const CombinedPage = () => {
       <div className="relative min-h-screen overflow-hidden ">
         {/* Local Background Image with Dark Overlay */}
         <div className="absolute inset-0">
-        <Image
-          src="/bg.jpg"
-          alt="Background"
-          fill
-          priority
-          style={{ objectFit: "fill" }}
-        />
+          <Image
+            src="/bg.jpg"
+            alt="Background"
+            fill
+            priority
+            style={{ objectFit: "fill" }}
+          />
 
           {/* Increase overlay opacity for proper contrast against an olive-green bg */}
           <div className="absolute inset-0 opacity-75"></div>
@@ -57,26 +59,26 @@ const CombinedPage = () => {
             {/* Central Hero Content inside a 3D-style box */}
             <div className="w-full md:w-1/2 px-4">
               <div className="card-3d bg-lamaPurpleLight/40 p-8 rounded-lg shadow-2xl backdrop-blur-sm transition-transform duration-300 hover:scale-105">
-              <div className="mb-6 flex justify-center">
-                {/* Outer container adds perspective for a 3D effect */}
-                <div className="w-[100px] h-[100px]" style={{ perspective: '800px' }}>
-                  {/* Inner container rotates the logo */}
-                  <div
-                    className="inline-block origin-center"
-                    style={{
-                      transformStyle: 'preserve-3d',
-                      animation: 'globe-spin 10s linear infinite'
-                    }}
-                  >
-                    <Image
-                      src="/logo.png"
-                      alt="ScholarSuite Logo"
-                      width={100}
-                      height={100}
-                    />
+                <div className="mb-6 flex justify-center">
+                  {/* Outer container adds perspective for a 3D effect */}
+                  <div className="w-[100px] h-[100px]" style={{ perspective: '800px' }}>
+                    {/* Inner container rotates the logo */}
+                    <div
+                      className="inline-block origin-center"
+                      style={{
+                        transformStyle: 'preserve-3d',
+                        animation: 'globe-spin 10s linear infinite'
+                      }}
+                    >
+                      <Image
+                        src="/logo.png"
+                        alt="ScholarSuite Logo"
+                        width={100}
+                        height={100}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
 
                 <h1 className="text-5xl text-bluebag md:text-6xl font-bold mb-4 tracking-widest drop-shadow-lg animate-slideInDown animate-textPulse">
                   ScholarSuite
@@ -119,7 +121,7 @@ const CombinedPage = () => {
                 institutions with real‑time, accurate information and seamless integration.
               </p>
               <p className="text-lg text-black">
-                Designed for administrators, teachers, students, and parents, ScholarSuite isn’t just a system —
+                Designed for administrators, teachers, students, and parents, ScholarSuite isn’t just a system — 
                 it’s a gateway to academic excellence.
               </p>
             </div>
@@ -192,7 +194,6 @@ const CombinedPage = () => {
             className="bg-white/10 backdrop-blur-lg p-8 rounded-2xl shadow-2xl w-full max-w-md space-y-6 border border-white/20"
           >
             <div className="flex flex-col items-center gap-4">
-              
               <div className="flex items-center gap-3">
                 <Image
                   src="/logo.png"
@@ -265,6 +266,7 @@ const CombinedPage = () => {
             </div>
             <SignIn.Action
               submit
+              onClick={() => setLoading(true)}
               className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-medium py-3.5 rounded-lg transition-all duration-200 transform hover:scale-105 active:scale-95 focus:ring-2 focus:ring-indigo-400/50 focus:outline-none"
             >
               Sign In
@@ -281,6 +283,13 @@ const CombinedPage = () => {
           </SignIn.Step>
         </SignIn.Root>
       </div>
+
+      {/* Loading Spiral Effect */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="spinner"></div>
+        </div>
+      )}
 
       {/* Custom CSS Animations & 3D Effects */}
       <style jsx>{`
@@ -344,7 +353,7 @@ const CombinedPage = () => {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.8; }
         }
-              @keyframes globe-spin {
+        @keyframes globe-spin {
           from {
             transform: rotateY(0deg);
           }
@@ -381,6 +390,28 @@ const CombinedPage = () => {
         }
         .card-3d:hover {
           transform: rotateY(15deg) rotateX(5deg);
+        }
+
+        .loading-overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0, 0, 0, 0.6);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9999;
+        }
+        .spinner {
+          border: 8px solid #f3f3f3;
+          border-top: 8px solid #3498db;
+          border-radius: 50%;
+          width: 60px;
+          height: 60px;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
       `}</style>
     </div>

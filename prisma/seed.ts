@@ -1,8 +1,19 @@
 import { Day, PrismaClient, UserSex } from "@prisma/client";
+import { clerkClient } from "@clerk/nextjs/server"; // adjust import if needed
+
 const prisma = new PrismaClient();
 
 async function main() {
-  // ADMIN
+  console.log("Clearing existing data...");
+  // Clear all tables and restart auto-increment sequences.
+  await prisma.$executeRaw`
+    TRUNCATE TABLE "Admin", "Grade", "Class", "Subject", "Teacher", "Lesson", "Parent", "Student", "Exam", "Assignment", "Result", "Attendance", "Event", "Announcement" RESTART IDENTITY CASCADE;
+  `;
+
+  // -------------------
+  // 1. Seed Admins
+  // -------------------
+  console.log("Seeding Admins...");
   await prisma.admin.createMany({
     data: [
       { id: "admin1", username: "superadmin" },
@@ -10,196 +21,306 @@ async function main() {
     ],
   });
 
-  // GRADE
-  for (let level = 1; level <= 6; level++) {
-    await prisma.grade.create({
-      data: { level },
-    });
+  // -------------------
+  // 2. Seed Grades (levels 1 to 8)
+  // -------------------
+  console.log("Seeding Grades...");
+  for (let level = 1; level <= 8; level++) {
+    await prisma.grade.create({ data: { level } });
   }
 
-  // CLASS
-  const classNames = ["CE-A", "CE-B", "ME-A", "ME-B", "EE-A", "EE-B"];
-  for (let i = 0; i < classNames.length; i++) {
-    await prisma.class.create({
-      data: {
-        name: classNames[i],
-        gradeId: (i % 6) + 1,
-        capacity: 30,
-      },
-    });
-  }
-
-  // SUBJECTS (Engineering Courses)
-  const subjectData = [
-    { name: "Engineering Mathematics I", subjectCode: "ENGR101", credit: 5 },
-    { name: "Engineering Physics",       subjectCode: "ENGR102", credit: 4 },
-    { name: "Chemistry for Engineers",  subjectCode: "ENGR103", credit: 4 },
-    { name: "Basic Electrical",          subjectCode: "ENGR104", credit: 3 },
-    { name: "Engineering Mechanics",    subjectCode: "ENGR201", credit: 5 },
-    { name: "Programming in C",         subjectCode: "ENGR202", credit: 4 },
-    { name: "Digital Logic Design",     subjectCode: "ENGR203", credit: 3 },
-    { name: "Mechanics of Materials",   subjectCode: "ENGR204", credit: 3 },
-    { name: "Thermodynamics",           subjectCode: "ENGR301", credit: 4 },
-    { name: "Data Structures",          subjectCode: "ENGR302", credit: 4 },
+  // ----------------------
+  // 3. Seed ISE Subjects (only 10 subjects)
+  // ----------------------
+  console.log("Seeding ISE Subjects...");
+  const iseSubjects = [
+    "Data Structures",
+    "Database Systems",
+    "Operating Systems",
+    "Software Engineering",
+    "Machine Learning",
+    "Artificial Intelligence",
+    "Web Development",
+    "Cloud Computing",
+    "Computer Networks",
+    "Cybersecurity Basics"
   ];
-  await prisma.subject.createMany({ data: subjectData });
+  const subjectsData = iseSubjects.map((name, index) => ({
+    name: name,
+    subjectCode: `ISE-${(index + 1).toString().padStart(3, "0")}`,
+    credit: 3 + (index % 3),
+  }));
+  await prisma.subject.createMany({ data: subjectsData, skipDuplicates: true });
 
-  // TEACHERS
-  const teacherNames = ["Alice Chen", "Bob Kumar", "Carlos Lopez", "Dana Singh", "Eliot Zhang"];
-  for (let i = 1; i <= teacherNames.length; i++) {
-    const [first, last] = teacherNames[i - 1].split(" ");
-    await prisma.teacher.create({
+  // ----------------------
+  // 4. Seed Classes for ISE branch
+  // ----------------------
+  console.log("Seeding ISE Classes...");
+  const iseGradeId = 1; // For simplicity, we assign ISE students to grade 1.
+  const classA = await prisma.class.create({
+    data: {
+      name: "ISE-A",
+      capacity: 30,
+      gradeId: iseGradeId,
+    },
+  });
+  const classB = await prisma.class.create({
+    data: {
+      name: "ISE-B",
+      capacity: 30,
+      gradeId: iseGradeId,
+    },
+  });
+  const classIdMap = { ISE: [classA.id, classB.id] };
+
+  // ----------------------
+  // 5. Seed Teachers: Create exactly 5 teachers for ISE
+  // ----------------------
+  console.log("Seeding ISE Teachers...");
+  const teacherNamesISE = [
+    { first: "Kunal", last: "Verma" },
+    { first: "Ritu", last: "Aggarwal" },
+    { first: "Amit", last: "Shah" },
+    { first: "Neha", last: "Desai" },
+    { first: "Sanjay", last: "Patel" },
+  ];
+  const teacherIdMap = { ISE: [] as string[] };
+  const clerkForTeachers = await clerkClient();
+  for (let i = 0; i < teacherNamesISE.length; i++) {
+    const uname = `iseteach${i + 1}`;
+    // Create Clerk teacher user
+    const clerkTeacher = await clerkForTeachers.users.createUser({
+      username: uname,
+      password: `${uname}@2025`,
+      firstName: teacherNamesISE[i].first,
+      lastName: teacherNamesISE[i].last,
+      publicMetadata: { role: "teacher" },
+    });
+    // Create teacher record in Prisma
+    const teacher = await prisma.teacher.create({
       data: {
-        id: `TCHR${100 + i}`,
-        username: `tchr${100 + i}`,
-        name: first,
-        surname: last,
-        email: `tchr${100 + i}@college.edu`,
-        phone: `555-01${i.toString().padStart(2, '0')}`,
-        address: `Engineering Block, Campus`,
-        bloodType: ["A+","B+","O-","AB+","A-"][i % 5],
-        sex: i % 2 === 0 ? UserSex.FEMALE : UserSex.MALE,
+        id: clerkTeacher.id,
+        username: uname,
+        name: teacherNamesISE[i].first,
+        surname: teacherNamesISE[i].last,
+        email: `${uname}@college.edu`,
+        phone: `9090ISE${i + 1}`,
+        address: `ISE Department, Campus`,
+        bloodType: ["A+", "B+"][i % 2],
+        sex: i % 2 === 0 ? UserSex.MALE : UserSex.FEMALE,
         birthday: new Date(1980 + i, 0, 15),
-        subjects: {
-          connect: [{ id: ((i - 1) % subjectData.length) + 1 }],
-        },
-        classes: {
-          connect: [{ id: ((i - 1) % classNames.length) + 1 }],
-        },
       },
     });
+    teacherIdMap.ISE.push(teacher.id);
+    // For the first teacher, assign supervisor role for one random class.
+    if (i === 0) {
+      const randomClassId = classIdMap.ISE[Math.floor(Math.random() * classIdMap.ISE.length)];
+      await prisma.class.update({
+        where: { id: randomClassId },
+        data: { supervisorId: teacher.id },
+      });
+    }
   }
 
-  // LESSONS
-  for (let i = 1; i <= 20; i++) {
-    const classIndex = (i - 1) % classNames.length;
-    await prisma.lesson.create({
-      data: {
-        name: `Lec${i}`,
-        day: Day[Object.keys(Day)[(i - 1) % 5] as keyof typeof Day],
-        startTime: new Date(2025, 7, i, 9, 0),
-        endTime:   new Date(2025, 7, i, 10, 30),
-        subjectId: ((i - 1) % subjectData.length) + 1,
-        classId: classIndex + 1,
-        teacherId: `TCHR${100 + (i - 1) % teacherNames.length + 1}`,
-      },
+  // ----------------------
+  // 6. Seed Parents: Create exactly 5 parents.
+  // ----------------------
+  console.log("Seeding ISE Parents...");
+  const parentFirstNames = ["Suresh", "Geeta", "Rajesh", "Kavita", "Mahesh"];
+  const parentLastNames = ["Sharma", "Verma", "Gupta", "Singh", "Patel"];
+  const parentsData = [];
+  const clerkForParents = await clerkClient();
+  for (let i = 1; i <= 5; i++) {
+    const uname = `iseparent${i}`;
+    const clerkParent = await clerkForParents.users.createUser({
+      username: uname,
+      password: `${uname}@2025`,
+      firstName: parentFirstNames[i - 1],
+      lastName: parentLastNames[i - 1],
+      publicMetadata: { role: "parent" },
+    });
+    parentsData.push({
+      id: clerkParent.id,
+      username: uname,
+      name: parentFirstNames[i - 1],
+      surname: parentLastNames[i - 1],
+      email: `iseparent${i}@example.com`,
+      phone: `987654321${i.toString().padStart(2, "0")}`,
+      address: `House No. ${i}, Some Street, City`,
     });
   }
-
-  // PARENTS
-  for (let i = 1; i <= 40; i++) {
-    await prisma.parent.create({
-      data: {
-        id: `PRNT${200 + i}`,
-        username: `prnt${200 + i}`,
-        name: `Parent${i}`,
-        surname: `Surname${i}`,
-        email: `parent${i}@example.com`,
-        phone: `555-02${i.toString().padStart(2, '0')}`,
-        address: `Residence ${i}`,
-      },
-    });
+  for (const parent of parentsData) {
+    await prisma.parent.create({ data: parent });
   }
 
-  // STUDENTS
-  for (let i = 1; i <= 60; i++) {
+  // ----------------------
+  // 7. Seed Students: Create exactly 10 students for ISE.
+  // ----------------------
+  console.log("Seeding ISE Students...");
+  const studentFirstNames = ["Rahul", "Aditi", "Karan", "Sneha", "Vivek", "Anjali", "Arvind", "Priya", "Rohit", "Deepa"];
+  const studentLastNames = ["Sharma", "Gupta", "Singh", "Patel", "Reddy", "Kumar", "Nair", "Jain", "Desai", "Verma"];
+  for (let i = 1; i <= 10; i++) {
+    const classIds = classIdMap.ISE;
+    const randomClassId = classIds[Math.floor(Math.random() * classIds.length)];
+    const firstName = studentFirstNames[Math.floor(Math.random() * studentFirstNames.length)];
+    const lastName = studentLastNames[Math.floor(Math.random() * studentLastNames.length)];
+    const parentId = parentsData[(i - 1) % parentsData.length].id;
+    const uname = `isestud${i}`;
+    const clerkForStudents = await clerkClient();
+    const clerkStudent = await clerkForStudents.users.createUser({
+      username: uname,
+      password: `${uname}@2025`,
+      firstName: firstName,
+      lastName: lastName,
+      publicMetadata: { role: "student" },
+    });
     await prisma.student.create({
       data: {
-        id: `STUD${300 + i}`,
-        username: `stud${300 + i}`,
-        name: `Student${i}`,
-        surname: `Eng${i}`,
-        email: `stud${i}@college.edu`,
-        phone: `555-03${i.toString().padStart(2, '0')}`,
-        address: `Hostel ${Math.ceil(i/10)}`,
-        bloodType: ["A+","B-","O+","AB-","O-"][i % 5],
+        id: clerkStudent.id,
+        username: uname,
+        name: firstName,
+        surname: lastName,
+        email: `${uname}@college.edu`,
+        phone: `912345678${i.toString().padStart(2, "0")}`,
+        address: `Student Hostel, ISE Campus`,
+        bloodType: ["A+", "B-", "O+"][i % 3],
         sex: i % 2 === 0 ? UserSex.FEMALE : UserSex.MALE,
         birthday: new Date(2004, (i % 12), 10),
-        parentId: `PRNT${200 + ((i - 1) % 40) + 1}`,
-        gradeId: ((i - 1) % 6) + 1,
-        classId: ((i - 1) % classNames.length) + 1,
+        parentId: parentId,
+        gradeId: iseGradeId,
+        classId: randomClassId,
         creditDeficiency: 0,
+        requiredCredits: 150,
       },
     });
   }
 
-  // EXAMS
-  for (let i = 1; i <= 10; i++) {
+  // ----------------------
+  // 8. Seed Lessons: Create only 6 lessons from the first 6 ISE subjects.
+  // ----------------------
+  console.log("Seeding ISE Lessons...");
+  // Retrieve ISE subjects ordered by ID so we can pick the first 6.
+  const allISESubjects = await prisma.subject.findMany({
+    where: { subjectCode: { startsWith: "ISE-" } },
+    orderBy: { id: "asc" },
+  });
+  const lessonsToSeed = allISESubjects.slice(0, 6);
+  for (const subj of lessonsToSeed) {
+    const randomClassId = classIdMap.ISE[Math.floor(Math.random() * classIdMap.ISE.length)];
+    const randomTeacherId = teacherIdMap.ISE[Math.floor(Math.random() * teacherIdMap.ISE.length)];
+    await prisma.lesson.create({
+      data: {
+        name: subj.name,
+        day: Day.MONDAY,
+        startTime: new Date(2025, 0, 1, 9, 0),
+        endTime: new Date(2025, 0, 1, 10, 30),
+        subjectId: subj.id,
+        classId: randomClassId,
+        teacherId: randomTeacherId,
+      },
+    });
+  }
+
+  // ----------------------
+  // 9. Seed Exams & Assignments: For each lesson, create one exam and one assignment.
+  // ----------------------
+  console.log("Seeding Exams & Assignments...");
+  const lessons = await prisma.lesson.findMany();
+  for (const lesson of lessons) {
     await prisma.exam.create({
       data: {
-        title: `Exam ${i}`,
-        startTime: new Date(2025, 8, i, 11, 0),
-        endTime:   new Date(2025, 8, i, 12, 30),
-        lessonId: (i % 20) + 1,
+        title: `${lesson.name} Exam`,
+        startTime: new Date(2025, 5, 1, 9, 0),
+        endTime: new Date(2025, 5, 1, 11, 0),
+        lessonId: lesson.id,
       },
     });
-  }
-
-  // ASSIGNMENTS
-  for (let i = 1; i <= 10; i++) {
     await prisma.assignment.create({
       data: {
-        title: `Assignment ${i}`,
-        startDate: new Date(2025, 7, i),
-        dueDate:   new Date(2025, 7, i + 7),
-        lessonId: (i % 20) + 1,
+        title: `${lesson.name} Assignment 1`,
+        startDate: new Date(2025, 0, 1),
+        dueDate: new Date(2025, 0, 15),
+        lessonId: lesson.id,
       },
     });
   }
 
-  // RESULTS
-  for (let i = 1; i <= 15; i++) {
-    const score = Math.floor(50 + Math.random() * 50);
-    const lessonIndex = (i - 1) % 20 + 1;
-    // determine subject from lesson
-    const lesson = await prisma.lesson.findUnique({ where: { id: lessonIndex }, select: { subjectId: true } });
-    await prisma.result.create({
-      data: {
-        score,
-        studentId: `STUD${300 + ((i - 1) % 60) + 1}`,
-        ...(i <= 7 ? { examId: i } : { assignmentId: i - 7 }),
-        subjectId: lesson!.subjectId,
-      },
-    });
+  // ----------------------
+  // 10. Seed Results: Create 5 results for each student.
+  // ----------------------
+  console.log("Seeding Results...");
+  const studentsDB = await prisma.student.findMany();
+  const examsArr = await prisma.exam.findMany();
+  const assignmentsArr = await prisma.assignment.findMany();
+  const lessonsAll = await prisma.lesson.findMany({
+    include: { subject: true },
+  });
+  for (const student of studentsDB) {
+    for (let i = 0; i < 5; i++) {
+      const isExam = Math.random() > 0.5;
+      const score = Math.floor(60 + Math.random() * 40);
+      const randomLesson = lessonsAll[Math.floor(Math.random() * lessonsAll.length)];
+      await prisma.result.create({
+        data: {
+          score,
+          studentId: student.id,
+          ...(isExam
+            ? { examId: examsArr[Math.floor(Math.random() * examsArr.length)].id }
+            : { assignmentId: assignmentsArr[Math.floor(Math.random() * assignmentsArr.length)].id }),
+          subjectId: randomLesson.subjectId,
+        },
+      });
+    }
   }
 
-  // ATTENDANCE
-  for (let i = 1; i <= 30; i++) {
+  // ----------------------
+  // 11. Seed Attendance: Create 5 attendance records.
+  // ----------------------
+  console.log("Seeding Attendance...");
+  const allStudents = await prisma.student.findMany();
+  for (let i = 1; i <= 5; i++) {
+    const randomStudent = allStudents[Math.floor(Math.random() * allStudents.length)];
     await prisma.attendance.create({
       data: {
         date: new Date(2025, 7, (i % 28) + 1),
         present: i % 5 !== 0,
-        studentId: `STUD${300 + ((i - 1) % 60) + 1}`,
-        lessonId: (i - 1) % 20 + 1,
+        studentId: randomStudent.id,
+        lessonId: lessons[(i - 1) % lessons.length].id,
       },
     });
   }
 
-  // EVENTS & ANNOUNCEMENTS
-  for (let i = 1; i <= 3; i++) {
-    await prisma.event.create({
-      data: {
-        title: `Workshop ${i}`,
-        description: `Hands-on session for Lab`,
-        startTime: new Date(2025, 7, 20 + i, 14, 0),
-        endTime:   new Date(2025, 7, 20 + i, 16, 0),
-        classId: (i % classNames.length) + 1,
-      },
-    });
+  // ----------------------
+  // 12. Seed Event & Announcement: Create 1 event and 1 announcement.
+  // ----------------------
+  console.log("Seeding Event & Announcement...");
+  const classIds = Object.values(classIdMap).flat();
+  const randomClassForEvent = classIds[Math.floor(Math.random() * classIds.length)];
+  await prisma.event.create({
+    data: {
+      title: `ISE Workshop`,
+      description: `ISE Hands-on Lab Session`,
+      startTime: new Date(2025, 7, 21, 14, 0),
+      endTime: new Date(2025, 7, 21, 16, 0),
+      classId: randomClassForEvent,
+    },
+  });
+  await prisma.announcement.create({
+    data: {
+      title: `ISE Notice`,
+      description: `Important ISE class update`,
+      date: new Date(2025, 7, 16),
+      classId: randomClassForEvent,
+    },
+  });
 
-    await prisma.announcement.create({
-      data: {
-        title: `Notice ${i}`,
-        description: `Important update for class`,
-        date: new Date(2025, 7, 15 + i),
-        classId: (i % classNames.length) + 1,
-      },
-    });
-  }
-
-  console.log("Seeding completed successfully.");
+  console.log("ISE seeding completed successfully!");
 }
 
 main()
-  .then(async () => { await prisma.$disconnect(); })
-  .catch(async (e) => { console.error(e); await prisma.$disconnect(); process.exit(1); });
+  .then(async () => await prisma.$disconnect())
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });

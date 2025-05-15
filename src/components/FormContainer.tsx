@@ -21,12 +21,7 @@
     id?: number | string;
     };
 
-    const FormContainer = async ({
-    table,
-    type,
-    data,
-    id,
-    }: FormContainerProps) => {
+    const FormContainer = async ({ table, type, data, id }: FormContainerProps) => {
     let relatedData = {};
 
     const { userId, sessionClaims } = await auth();
@@ -65,7 +60,6 @@
         }
         case "student": {
             // Student: fetch available grades and classes.
-            // The Student form will manage `requiredCredits` internally.
             const studentGrades = await prisma.grade.findMany({
             select: { id: true, level: true },
             });
@@ -76,7 +70,7 @@
             break;
         }
         case "exam": {
-            // Exam: fetch lessons for scheduling; if teacher, filter by current teacher.
+            // Exam: fetch lessons for scheduling; if teacher, filter by current user.
             const examLessons = await prisma.lesson.findMany({
             where: role === "teacher" ? { teacherId: currentUserId! } : {},
             select: { id: true, name: true },
@@ -105,15 +99,16 @@
         case "assignment": {
             // Assignment: fetch lessons (filter by teacher if needed).
             const assignmentLessons = await prisma.lesson.findMany({
-            where: role === "teacher" ? { teacherId: currentUserId! } : {},
-            select: { id: true, name: true },
+                where: role === "teacher"?{ teacherId: currentUserId! } : {},
+                select: { id: true, name: true },
             });
+            console.log("Assignment Lessons Fetched:", assignmentLessons);
             relatedData = { lessons: assignmentLessons };
+            
             break;
         }
         case "result": {
-            // For results: fetch exams and assignments (with subject and class details), available students,
-            // and also available subjects.
+            // Result: fetch exams, assignments, students, and subjects.
             const resultExams = await prisma.exam.findMany({
             select: {
                 id: true,
@@ -121,9 +116,7 @@
                 lesson: {
                 select: {
                     subjectId: true,
-                    class: {
-                    select: { id: true },
-                    },
+                    class: { select: { id: true } },
                 },
                 },
             },
@@ -135,9 +128,7 @@
                 lesson: {
                 select: {
                     subjectId: true,
-                    class: {
-                    select: { id: true },
-                    },
+                    class: { select: { id: true } },
                 },
                 },
             },
@@ -147,9 +138,7 @@
                 role === "teacher"
                 ? {
                     class: {
-                        lessons: {
-                        some: { teacherId: currentUserId },
-                        },
+                        lessons: { some: { teacherId: currentUserId } },
                     },
                     }
                 : {},
@@ -167,7 +156,7 @@
             break;
         }
         case "attendance": {
-            // Attendance: fetch lessons to link an attendance record.
+            // Attendance: fetch lessons to link with an attendance record.
             const attendanceLessons = await prisma.lesson.findMany({
             select: { id: true, name: true },
             });
@@ -204,7 +193,13 @@
 
     return (
         <div>
-        <FormModal table={table} type={type} data={data} id={id} relatedData={relatedData} />
+        <FormModal
+            table={table}
+            type={type}
+            data={data}
+            id={id}
+            relatedData={relatedData}
+        />
         </div>
     );
     };

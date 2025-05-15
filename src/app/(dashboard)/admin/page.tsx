@@ -13,7 +13,7 @@ const AdminPage = ({
   return (
     <div className="p-4">
       {/* Dashboard Header */}
-      <h1 className="text-1xl centre font-bold mb-6">Admin Dashboard</h1>
+      <h1 className="text-1xl centre font-bold mb-6 ">Admin Dashboard</h1>
       <div className="flex gap-4 flex-col md:flex-row">
         {/* LEFT COLUMN: Main Dashboard Widgets */}
         <div className="w-full lg:w-2/3 flex flex-col gap-8">
