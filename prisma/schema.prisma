@@ -211,3 +211,19 @@ model Announcement {
   class       Class?   @relation(fields: [classId], references: [id])
 }
 
+model Alumni {
+  id              String   @id @default(uuid())
+  name            String
+  email           String   @unique
+  password        String
+  graduationYear  Int
+  currentJob      String?
+  company         String?
+  position        String?
+  bio             String?
+  phone           String?
+  linkedinUrl     String?
+  githubUrl       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
