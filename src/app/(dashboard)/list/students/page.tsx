@@ -23,54 +23,21 @@ const StudentListPage = async ({
   const { sessionClaims } = await auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
 
-  // Define columns for presentation.
   const columns = [
-    {
-      header: "Info",
-      accessor: "info",
-    },
-    {
-      header: "Student ID",
-      accessor: "studentId",
-      className: "md:table-cell",
-    },
-    {
-      header: "Grade",
-      accessor: "grade",
-      className: "md:table-cell",
-    },
-    {
-      header: "Phone",
-      accessor: "phone",
-      className: "lg:table-cell",
-    },
-    {
-      header: "Address",
-      accessor: "address",
-      className: "lg:table-cell",
-    },
-    {
-      header: "Credit Deficiency",
-      accessor: "creditDef",
-      className: "lg:table-cell",
-    },
-    ...(role === "admin"
-      ? [
-          {
-            header: "Actions",
-            accessor: "action",
-          },
-        ]
-      : []),
+    { header: "Info", accessor: "info" },
+    { header: "Student ID", accessor: "studentId", className: "hidden md:table-cell" },
+    { header: "Grade", accessor: "grade", className: "hidden md:table-cell" },
+    { header: "Phone", accessor: "phone", className: "hidden lg:table-cell" },
+    { header: "Address", accessor: "address", className: "hidden lg:table-cell" },
+    { header: "Credit Deficiency", accessor: "creditDef", className: "hidden lg:table-cell" },
+    ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
   ];
 
-  // Render a single row.
   const renderRow = (item: StudentList) => (
     <tr
       key={item.id}
       className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-lamaPurpleLight"
     >
-      {/* Info column: Avatar, Name and Class */}
       <td className="flex items-center gap-4 p-4">
         <Image
           src={item.img || "/noAvatar.png"}
@@ -84,17 +51,11 @@ const StudentListPage = async ({
           <p className="text-xs text-gray-500">{item.class.name}</p>
         </div>
       </td>
-      {/* Student ID column */}
-      <td className="md:table-cell">{item.username}</td>
-      {/* Grade column */}
-      <td className="md:table-cell">{item.grade.level}</td>
-      {/* Phone column */}
-      <td className="lg:table-cell">{item.phone}</td>
-      {/* Address column */}
-      <td className="lg:table-cell">{item.address}</td>
-      {/* Credit Deficiency column */}
-      <td className="lg:table-cell">{item.creditDeficiency}</td>
-      {/* Actions column */}
+      <td className="hidden md:table-cell">{item.username}</td>
+      <td className="hidden md:table-cell">{item.grade.level}</td>
+      <td className="hidden lg:table-cell">{item.phone}</td>
+      <td className="hidden lg:table-cell">{item.address}</td>
+      <td className="hidden lg:table-cell">{item.creditDeficiency}</td>
       <td>
         <div className="flex items-center gap-2">
           <Link href={`/list/students/${item.id}`}>
@@ -113,7 +74,6 @@ const StudentListPage = async ({
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
-  // Build the URL filter query.
   const query: Prisma.StudentWhereInput = {};
 
   if (queryParams) {
@@ -121,14 +81,7 @@ const StudentListPage = async ({
       if (value !== undefined) {
         switch (key) {
           case "teacherId":
-            // Filter students whose class has at least one lesson taught by given teacher.
-            query.class = {
-              lessons: {
-                some: {
-                  teacherId: value,
-                },
-              },
-            };
+            query.class = { lessons: { some: { teacherId: value } } };
             break;
           case "search":
             query.name = { contains: value, mode: "insensitive" };
@@ -140,14 +93,10 @@ const StudentListPage = async ({
     }
   }
 
-  // Fetch students including related class and grade.
   const [data, count] = await prisma.$transaction([
     prisma.student.findMany({
       where: query,
-      include: {
-        class: true,
-        grade: true,
-      },
+      include: { class: true, grade: true },
       take: ITEM_PER_PAGE,
       skip: ITEM_PER_PAGE * (p - 1),
     }),
@@ -156,9 +105,8 @@ const StudentListPage = async ({
 
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
-      {/* TOP */}
       <div className="flex items-center justify-between">
-        <h1 className="md:block text-lg font-semibold">All Students</h1>
+        <h1 className="hidden md:block text-lg font-semibold">All Students</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
           <div className="flex items-center gap-4 self-end">
@@ -172,9 +120,7 @@ const StudentListPage = async ({
           </div>
         </div>
       </div>
-      {/* LIST */}
       <Table columns={columns} renderRow={renderRow} data={data} />
-      {/* PAGINATION */}
       <Pagination page={p} count={count} />
     </div>
   );

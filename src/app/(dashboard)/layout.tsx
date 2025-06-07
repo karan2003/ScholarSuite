@@ -17,7 +17,7 @@ export default function DashboardLayout({
           className="flex items-center justify-center lg:justify-start gap-2"
         >
           <Image src="/logo.png" alt="logo" width={32} height={32} />
-          <span className="
+          <div className="hidden
                 lg:block 
                 font-bold 
             +   bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent 
@@ -30,7 +30,7 @@ export default function DashboardLayout({
             +   tracking-tighter
             ">
           ScholarSuite
-          </span>
+          </div>
         </Link>
         <Menu />
       </div>

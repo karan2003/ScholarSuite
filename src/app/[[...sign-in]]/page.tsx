@@ -13,7 +13,6 @@ const CombinedPage = () => {
   const loginRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(false);
 
-  // Redirect authenticated users if role metadata exists
   useEffect(() => {
     if (user && user.publicMetadata.role) {
       setLoading(true);
@@ -21,17 +20,14 @@ const CombinedPage = () => {
     }
   }, [user, router]);
 
-  // Smooth scroll to the login section
   const scrollToLogin = () => {
     loginRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
     <div>
-      {/* LANDING PAGE */}
-      <div className="relative min-h-screen overflow-hidden ">
-        {/* Local Background Image with Dark Overlay */}
-        <div className="absolute inset-0">
+      <div className="relative min-h-screen overflow-hidden">
+        <div className="absolute inset-0 hidden sm:block">
           <Image
             src="/bg.jpg"
             alt="Background"
@@ -39,15 +35,11 @@ const CombinedPage = () => {
             priority
             style={{ objectFit: "fill" }}
           />
-
-          {/* Increase overlay opacity for proper contrast against an olive-green bg */}
           <div className="absolute inset-0 opacity-75"></div>
         </div>
         <div className="relative z-10">
-          {/* HERO SECTION */}
           <header className="flex flex-col md:flex-row items-center justify-center text-center py-24 px-4">
-            {/* Left Decor Image – visible on md and up with slide & oscillation */}
-            <div className="  md:flex md:w-1/4 justify-end pr-4 animate-slideInLeft">
+            <div className="hidden md:flex md:w-1/4 justify-end pr-4 animate-slideInLeft">
               <Image
                 src="/left.png"
                 alt="Left Decoration"
@@ -56,13 +48,10 @@ const CombinedPage = () => {
                 className="rounded-lg shadow-lg transition-transform duration-500 hover:scale-105 animate-oscillate"
               />
             </div>
-            {/* Central Hero Content inside a 3D-style box */}
             <div className="w-full md:w-1/2 px-4">
               <div className="card-3d bg-lamaPurpleLight/40 p-8 rounded-lg shadow-2xl backdrop-blur-sm transition-transform duration-300 hover:scale-105">
                 <div className="mb-6 flex justify-center">
-                  {/* Outer container adds perspective for a 3D effect */}
                   <div className="w-[100px] h-[100px]" style={{ perspective: '800px' }}>
-                    {/* Inner container rotates the logo */}
                     <div
                       className="inline-block origin-center"
                       style={{
@@ -79,28 +68,24 @@ const CombinedPage = () => {
                     </div>
                   </div>
                 </div>
-
-                <h1 className="text-5xl text-bluebag md:text-6xl font-bold mb-4 tracking-widest drop-shadow-lg animate-slideInDown animate-textPulse">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl text-bluebag font-bold mb-4 tracking-widest drop-shadow-lg animate-slideInDown animate-textPulse">
                   ScholarSuite
                 </h1>
-                <p className="text-2xl text-tb md:text-3xl font-medium mb-8 max-w-3xl mx-auto drop-shadow-md animate-slideInDown">
+                <p className="text-xl sm:text-2xl md:text-3xl text-tb font-medium mb-8 max-w-3xl mx-auto drop-shadow-md animate-slideInDown">
                   Transforming Campus Administration &amp; Elevating Academic Excellence
                 </p>
-                <p className="max-w-2xl mb-10 text-lg leading-relaxed mx-auto drop-shadow-md animate-slideInUp">
-                  ScholarSuite is an advanced college database management system engineered to
-                  automate and manage every aspect of campus administration—from tracking student
-                  progress and attendance to managing courses, exams, and reporting.
+                <p className="max-w-2xl mb-10 text-base sm:text-lg leading-relaxed mx-auto drop-shadow-md animate-slideInUp">
+                  ScholarSuite is an advanced college database management system engineered to automate and manage every aspect of campus administration.
                 </p>
                 <button
                   onClick={scrollToLogin}
-                  className="px-8 py-4 bg-white text-indigo-800 font-semibold rounded-full shadow-xl transition-all duration-300 transform hover:scale-105 hover:bg-gray-100 animate-bounce"
+                  className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-indigo-800 font-semibold rounded-full shadow-xl transition-all duration-300 transform hover:scale-105 hover:bg-gray-100 animate-bounce"
                 >
                   Sign In Now
                 </button>
               </div>
             </div>
-            {/* Right Decor Image – visible on md and up with slide & oscillation */}
-            <div className="  md:flex md:w-1/4 justify-start pl-4 animate-slideInRight">
+            <div className="hidden md:flex md:w-1/4 justify-start pl-4 animate-slideInRight">
               <Image
                 src="/right.png"
                 alt="Right Decoration"
@@ -111,70 +96,51 @@ const CombinedPage = () => {
             </div>
           </header>
 
-          {/* ABOUT SECTION */}
           <section className="py-16 px-4">
             <div className="max-w-5xl mx-auto text-center">
               <h2 className="text-3xl font-bold mb-8 text-bluebag">About ScholarSuite</h2>
-              <p className="mb-6 text-lg text-black">
-                ScholarSuite replaces outdated manual systems by centralizing data management and
-                automating critical administrative tasks. Its robust three-tier architecture empowers
-                institutions with real‑time, accurate information and seamless integration.
+              <p className="mb-6 text-base sm:text-lg text-black">
+                ScholarSuite replaces outdated manual systems by centralizing data management and automating critical administrative tasks.
               </p>
-              <p className="text-lg text-black">
-                Designed for administrators, teachers, students, and parents, ScholarSuite isn’t just a system — 
-                it’s a gateway to academic excellence.
+              <p className="text-base sm:text-lg text-black">
+                Designed for administrators, teachers, students, and parents, ScholarSuite isn’t just a system — it’s a gateway to academic excellence.
               </p>
             </div>
           </section>
 
-          {/* KEY FEATURES SECTION */}
           <section className="py-16 px-4 bg-indigo-900">
             <div className="max-w-5xl mx-auto text-center">
               <h2 className="text-3xl font-bold mb-8 text-white">Key Features</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                 <div className="card-3d bg-white text-indigo-800 p-6 rounded-lg shadow-xl animate-slideInLeft">
-                  <h3 className="text-2xl font-bold mb-2">Centralized Data Management</h3>
-                  <p>
-                    Manage all student, faculty, and administrative records from one unified platform,
-                    ensuring accuracy and reducing redundancy.
-                  </p>
+                  <h3 className="text-xl sm:text-2xl font-bold mb-2">Centralized Data Management</h3>
+                  <p>Manage all student, faculty, and administrative records from one unified platform.</p>
                 </div>
                 <div className="card-3d bg-white text-indigo-800 p-6 rounded-lg shadow-xl animate-slideInRight">
-                  <h3 className="text-2xl font-bold mb-2">Automated Administration</h3>
-                  <p>
-                    Automate tasks like attendance, scheduling, and exam management to save time and
-                    minimize errors.
-                  </p>
+                  <h3 className="text-xl sm:text-2xl font-bold mb-2">Automated Administration</h3>
+                  <p>Automate tasks like attendance, scheduling, and exam management to save time and minimize errors.</p>
                 </div>
                 <div className="card-3d bg-white text-indigo-800 p-6 rounded-lg shadow-xl animate-slideInLeft">
-                  <h3 className="text-2xl font-bold mb-2">Role-Based Access</h3>
-                  <p>
-                    Securely manage user access so that administrators, teachers, students, and parents see
-                    the data that matters most.
-                  </p>
+                  <h3 className="text-xl sm:text-2xl font-bold mb-2">Role-Based Access</h3>
+                  <p>Securely manage user access for administrators, teachers, students, and parents.</p>
                 </div>
                 <div className="card-3d bg-white text-indigo-800 p-6 rounded-lg shadow-xl animate-slideInRight">
-                  <h3 className="text-2xl font-bold mb-2">Scalable &amp; Reliable</h3>
-                  <p>
-                    Designed to scale with your institution, ScholarSuite delivers a robust, future‑ready
-                    solution for all administrative needs.
-                  </p>
+                  <h3 className="text-xl sm:text-2xl font-bold mb-2">Scalable &amp; Reliable</h3>
+                  <p>Designed to scale with your institution for a future‑ready administrative solution.</p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* JOIN NOW / CALL-TO-ACTION SECTION */}
           <section className="py-12 px-4 bg-gradient-to-r from-indigo-700 to-blue-700">
             <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-3xl font-bold mb-4 text-white">Join ScholarSuite Today</h2>
-              <p className="mb-6 text-lg text-white">
-                Experience streamlined, efficient campus administration that delivers secure and user-friendly
-                management. ScholarSuite is your trusted partner in elevating academic excellence.
+              <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-white">Join ScholarSuite Today</h2>
+              <p className="mb-6 text-base sm:text-lg text-white">
+                Experience streamlined campus administration that delivers secure and user-friendly management.
               </p>
               <button
                 onClick={scrollToLogin}
-                className="px-8 py-4 bg-white text-indigo-800 font-semibold rounded-full shadow-xl transition-all duration-300 transform hover:scale-105 hover:bg-gray-100 animate-slideInUp"
+                className="px-6 sm:px-8 py-3 sm:py-4 bg-white text-indigo-800 font-semibold rounded-full shadow-xl transition-all duration-300 transform hover:scale-105 hover:bg-gray-100 animate-slideInUp"
               >
                 Sign In Now
               </button>
@@ -183,7 +149,6 @@ const CombinedPage = () => {
         </div>
       </div>
 
-      {/* LOGIN SECTION */}
       <div
         ref={loginRef}
         className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-indigo-900 px-4 py-12"
@@ -202,11 +167,11 @@ const CombinedPage = () => {
                   height={40}
                   className="w-8 h-8 transition-transform duration-300 hover:scale-110"
                 />
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-600 bg-clip-text text-transparent">
+                <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-600 bg-clip-text text-transparent">
                   ScholarSuite
                 </h1>
               </div>
-              <h2 className="text-gray-200/80 text-sm font-medium">
+              <h2 className="text-gray-200/80 text-xs sm:text-sm font-medium">
                 Elevate Your Academic Journey
               </h2>
             </div>
@@ -272,11 +237,8 @@ const CombinedPage = () => {
               Sign In
             </SignIn.Action>
             <p className="text-center text-sm text-gray-300/80">
-              Trouble signing in?{" "}
-              <a
-                href="#"
-                className="text-indigo-300 hover:text-indigo-200 transition-colors"
-              >
+              Trouble signing in?{' '}
+              <a href="#" className="text-indigo-300 hover:text-indigo-200 transition-colors">
                 Reset password
               </a>
             </p>
@@ -284,12 +246,13 @@ const CombinedPage = () => {
         </SignIn.Root>
       </div>
 
-      {/* Loading Spiral Effect */}
       {loading && (
         <div className="loading-overlay">
           <div className="spinner"></div>
         </div>
       )}
+
+
 
       {/* Custom CSS Animations & 3D Effects */}
       <style jsx>{`

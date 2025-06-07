@@ -96,6 +96,12 @@ const menuItems = [
         href: "/list/Cgpa",
         visible: ["admin", "teacher", "student", "parent"],
       },
+      {
+        icon: "/notes.png",
+        label: "Notes",
+        href: "/list/notes",
+        visible: ["admin", "teacher", "student", "parent"],
+      },
     ],
   },
   {
@@ -128,12 +134,12 @@ const Menu = async () => {
   const role = user?.publicMetadata.role as string;
   return (
     <div className="mt-4 text-sm">
-      {menuItems.map((i) => (
-        <div className="flex flex-col gap-2" key={i.title}>
-          <span className="  lg:block text-gray-400 font-light my-4">
-            {i.title}
+      {menuItems.map((section) => (
+        <div className="flex flex-col gap-2" key={section.title}>
+          <span className="hidden lg:block text-gray-400 font-light my-4">
+            {section.title}
           </span>
-          {i.items.map((item) => {
+          {section.items.map((item) => {
             if (item.visible.includes(role)) {
               return (
                 <Link
@@ -142,10 +148,11 @@ const Menu = async () => {
                   className="flex items-center justify-center lg:justify-start gap-4 text-gray-500 py-2 md:px-2 rounded-md hover:bg-lamaYellow"
                 >
                   <Image src={item.icon} alt="" width={20} height={20} />
-                  <span className="  lg:block">{item.label}</span>
+                  <span className="hidden lg:block">{item.label}</span>
                 </Link>
               );
             }
+            return null;
           })}
         </div>
       ))}

@@ -18,8 +18,7 @@ const EventListPage = async ({
   const { userId, sessionClaims } = await auth();
   const role = (sessionClaims?.metadata as { role?: string })?.role;
   const currentUserId = userId;
-  
-  // Define table columns.
+
   const columns = [
     { header: "Title", accessor: "title" },
     { header: "Class", accessor: "class" },
@@ -29,7 +28,6 @@ const EventListPage = async ({
     ...(role === "admin" ? [{ header: "Actions", accessor: "action" }] : []),
   ];
 
-  // Render function for each event row.
   const renderRow = (item: EventList) => (
     <tr
       key={item.id}
@@ -67,12 +65,11 @@ const EventListPage = async ({
     </tr>
   );
 
-  // Extract URL parameters.
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
-  
-  // Build query filtering.
+
   const query: Prisma.EventWhereInput = {};
+
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
@@ -86,21 +83,18 @@ const EventListPage = async ({
       }
     }
   }
-  
-  // ROLE CONDITIONS: define logic to show public events (classId is null)
-  // or events where the teacher/student/parent is linked to the class.
+
   const roleConditions = {
     teacher: { lessons: { some: { teacherId: currentUserId! } } },
     student: { students: { some: { id: currentUserId! } } },
     parent: { students: { some: { parentId: currentUserId! } } },
   };
-  
+
   query.OR = [
     { classId: null },
     { class: roleConditions[role as keyof typeof roleConditions] || {} },
   ];
-  
-  // Execute a paginated query.
+
   const [data, count] = await prisma.$transaction([
     prisma.event.findMany({
       where: query,
@@ -110,15 +104,15 @@ const EventListPage = async ({
     }),
     prisma.event.count({ where: query }),
   ]);
-  
+
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
       {/* TOP */}
-      <div className="flex items-center justify-between">
-        <h1 className="md:block text-lg font-semibold">All Events</h1>
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <h1 className="text-lg font-semibold">All Events</h1>
         <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
           <TableSearch />
-          <div className="flex items-center gap-4 self-end">
+          <div className="flex items-center gap-4 self-end md:self-auto">
             <button className="w-8 h-8 flex items-center justify-center rounded-full bg-lamaYellow">
               <Image src="/filter.png" alt="Filter" width={14} height={14} />
             </button>
