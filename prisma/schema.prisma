@@ -214,6 +214,7 @@ model Announcement {
 model Alumni {
   id              String   @id @default(uuid())
   name            String
+  username        String   @unique 
   email           String   @unique
   password        String
   graduationYear  Int
@@ -224,6 +225,9 @@ model Alumni {
   phone           String?
   linkedinUrl     String?
   githubUrl       String?
+  websiteUrl      String?
+  twitterUrl      String?
+  img             String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }

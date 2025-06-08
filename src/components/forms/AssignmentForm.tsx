@@ -21,48 +21,24 @@
     setOpen: Dispatch<SetStateAction<boolean>>;
     relatedData?: any;
     }) => {
-    // Ensuring we always have an object for relatedData
-    relatedData = relatedData || {};
-    
-    // Destructure lessons with a fallback to an empty array.
-    const { lessons = [] } = relatedData;
-    console.log("Lessons in AssignmentForm:", lessons);
-
-    // Set defaultValues ensuring keys (even empty) are sent to the server.
-    // For date fields, convert Date objects (or ISO string values) to the "datetime-local" format.
     const {
         register,
         handleSubmit,
         formState: { errors },
     } = useForm<AssignmentSchema>({
         resolver: zodResolver(assignmentSchema),
-        defaultValues: {
-        title: data?.title || "",
-        startDate: data?.startDate
-            ? new Date(data.startDate).toISOString().substring(0, 16)
-            : "",
-        dueDate: data?.dueDate
-            ? new Date(data.dueDate).toISOString().substring(0, 16)
-            : "",
-        lessonId: data?.lessonId || "",
-        ...(data?.id ? { id: data.id } : {}),
-        },
     });
 
-    // Handle create/update actions using useFormState.
     const [state, formAction] = useFormState(
         type === "create" ? createAssignment : updateAssignment,
-        { success: false, error: false }
+        {
+        success: false,
+        error: false,
+        }
     );
 
     const onSubmit = handleSubmit((formData) => {
-        console.log("Submitted assignment data:", formData);
-        // Create a shallow copy and remove undefined keys (for example, id) if not present.
-        const payload = { ...formData };
-        if (payload.id === undefined) {
-        delete payload.id;
-        }
-        formAction(payload);
+        formAction(formData);
     });
 
     const router = useRouter();
@@ -75,6 +51,8 @@
         }
     }, [state, router, type, setOpen]);
 
+    const { lessons } = relatedData;
+
     return (
         <form className="flex flex-col gap-8" onSubmit={onSubmit}>
         <h1 className="text-xl font-semibold">
@@ -82,7 +60,6 @@
         </h1>
 
         <div className="flex justify-between flex-wrap gap-4">
-            {/* Assignment Title */}
             <InputField
             label="Assignment Title"
             name="title"
@@ -90,37 +67,23 @@
             register={register}
             error={errors?.title}
             />
-
-            {/* Start Date */}
             <InputField
             label="Start Date"
             name="startDate"
-            type="datetime-local"
-            defaultValue={
-                data?.startDate
-                ? new Date(data.startDate).toISOString().substring(0, 16)
-                : ""
-            }
+            defaultValue={data?.startDate}
             register={register}
             error={errors?.startDate}
+            type="datetime-local"
             />
-
-            {/* Due Date */}
             <InputField
             label="Due Date"
             name="dueDate"
-            type="datetime-local"
-            defaultValue={
-                data?.dueDate
-                ? new Date(data.dueDate).toISOString().substring(0, 16)
-                : ""
-            }
+            defaultValue={data?.dueDate}
             register={register}
             error={errors?.dueDate}
+            type="datetime-local"
             />
-
-            {/* Render Id only in update mode */}
-            {data && data.id && (
+            {data && (
             <InputField
                 label="Id"
                 name="id"
@@ -130,18 +93,15 @@
                 hidden
             />
             )}
-
-            {/* Lesson select field */}
             <div className="flex flex-col gap-2 w-full md:w-1/4">
             <label className="text-xs text-gray-500">Lesson</label>
             <select
-                multiple={false}
                 className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
                 {...register("lessonId")}
-                defaultValue={data?.lessonId || ""}
+                defaultValue={data?.lessonId}
             >
                 <option value="">Select Lesson</option>
-                {lessons.map((lesson: { id: number; name: string }) => (
+                {lessons?.map((lesson: { id: number; name: string }) => (
                 <option value={lesson.id} key={lesson.id}>
                     {lesson.name}
                 </option>
@@ -154,11 +114,9 @@
             )}
             </div>
         </div>
-
         {state.error && (
             <span className="text-red-500">Something went wrong!</span>
         )}
-
         <button className="bg-blue-400 text-white p-2 rounded-md">
             {type === "create" ? "Create" : "Update"}
         </button>

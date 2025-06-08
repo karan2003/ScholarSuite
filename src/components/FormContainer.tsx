@@ -99,12 +99,10 @@
         case "assignment": {
             // Assignment: fetch lessons (filter by teacher if needed).
             const assignmentLessons = await prisma.lesson.findMany({
-                where: role === "teacher"?{ teacherId: currentUserId! } : {},
+                where: role === "teacher" ? { teacherId: currentUserId! } : {},
                 select: { id: true, name: true },
             });
-            console.log("Assignment Lessons Fetched:", assignmentLessons);
             relatedData = { lessons: assignmentLessons };
-            
             break;
         }
         case "result": {
@@ -190,6 +188,7 @@
         }
         }
     }
+
 
     return (
         <div>

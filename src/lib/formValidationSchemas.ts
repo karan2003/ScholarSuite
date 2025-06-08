@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 
+
 export const subjectSchema = z.object({
   id: z.coerce.number().optional(),
   name: z.string().min(1, { message: "Subject name is required!" }),
@@ -73,15 +74,6 @@ export const studentSchema = z.object({
 
 export type StudentSchema = z.infer<typeof studentSchema>;
 
-export const examSchema = z.object({
-  id: z.coerce.number().optional(),
-  title: z.string().min(1, { message: "Title name is required!" }),
-  startTime: z.coerce.date({ message: "Start time is required!" }),
-  endTime: z.coerce.date({ message: "End time is required!" }),
-  lessonId: z.coerce.number({ message: "Lesson is required!" }),
-});
-
-export type ExamSchema = z.infer<typeof examSchema>;
 
 
 // formValidationSchemas.txt updates
@@ -125,18 +117,56 @@ export const lessonSchema = z
 
 export type LessonSchema = z.infer<typeof lessonSchema>;
 
+export const examSchema = z.object({
+  id: z.coerce.number().optional(),
+  title: z.string().min(1, { message: "Title name is required!" }),
+  startTime: z.coerce.date({ message: "Start time is required!" }),
+  endTime: z.coerce.date({ message: "End time is required!" }),
+  lessonId: z.coerce.number({ message: "Lesson is required!" }),
+});
+
+export type ExamSchema = z.infer<typeof examSchema>;
+
 export const assignmentSchema = z
   .object({
     id: z.coerce.number().optional(),
     title: z.string().min(1, { message: "Assignment title is required!" }),
     startDate: z.coerce.date({ message: "Start date is required!" }),
     dueDate: z.coerce.date({ message: "Due date is required!" }),
-    lessonId: z.coerce.number({ required_error: "Lesson is required!" }).min(1, { message: "Lesson must be selected!" }),
-  })
-  .refine((data) => data.startDate < data.dueDate, {
-    message: "Start date must be before due date",
-    path: ["startDate"],
+    lessonId: z.coerce.number({ message: "Lesson is required!" }),
   });
 export type AssignmentSchema = z.infer<typeof assignmentSchema>;
 
 
+export const alumniSchema = z.object({
+  id: z.string().optional(),
+  username: z
+  .string()
+  .min(3, { message: "Username must be at least 3 characters long!" })
+  .max(20, { message: "Username must be at most 20 characters long!" }),
+  name: z.string().min(1, { message: "First name is required!" }),
+  email: z.string().email({ message: "Invalid email address!" }),
+  password: z.string().min(8, { message: "Password must be at least 8 characters long!" }),
+  graduationYear: z.coerce.number().min(1900, { message: "Invalid graduation year!" }),
+  currentJob: z.string().optional(),
+  company: z.string().optional(),
+  position: z.string().optional(),
+  bio: z.string().optional(),
+  phone: z.string().optional(),
+  linkedinUrl: z.string().url({ message: "Invalid LinkedIn URL!" }).optional(),
+  githubUrl: z.string().url({ message: "Invalid GitHub URL!" }).optional(),
+  websiteUrl: z.string().url({ message: "Invalid Website URL!" }).optional(),
+  twitterUrl: z.string().url({ message: "Invalid Twitter URL!" }).optional(),
+  img: z.string().optional(),
+});
+
+export type AlumniSchema = z.infer<typeof alumniSchema>;
+
+export const attendanceSchema = z.object({
+  id: z.coerce.number().optional(),
+  studentId: z.string().min(1, { message: "Student is required!" }),
+  lessonId: z.coerce.number().min(1, { message: "Lesson is required!" }),
+  present: z.boolean({ required_error: "Attendance status is required!" }),
+});
+
+export type AttendanceSchema = z.infer<typeof attendanceSchema>;

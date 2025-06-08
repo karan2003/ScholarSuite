@@ -10,6 +10,7 @@ import {
   LessonSchema,
   AssignmentSchema,
   ResultSchema,
+  AlumniSchema
 } from "./formValidationSchemas";
 import prisma from "./prisma";
 import { clerkClient } from "@clerk/nextjs/server";
@@ -148,8 +149,7 @@ export const createTeacher = async (
   data: TeacherSchema
 ) => {
   try {
-    const clerk = await clerkClient();
-    const user = await clerk.users.createUser({
+    const user = await clerkClient().users.createUser({
       username: data.username,
       password: data.password,
       firstName: data.name,
@@ -631,3 +631,109 @@ export const deleteResult = async (
     return { success: false, error: true };
   }
 };
+
+
+
+/* -------------------------------------------------------- */
+/* Alumni Actions                                           */
+export const createAlumni = async (
+  currentState: any,
+  data: AlumniSchema
+) => {
+  try {
+    const clerk = await clerkClient();
+    const user = await clerk.users.createUser({
+      username: data.username,
+      emailAddress: [data.email],
+      password: data.password,
+      firstName: data.name,
+      publicMetadata: { role: "alumni" },
+    });
+
+    if (!user.id) throw new Error("Failed to retrieve Clerk user ID");
+
+    await prisma.alumni.create({
+      data: {
+        id: user.id,
+        username: data.username,
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        graduationYear: data.graduationYear,
+        currentJob: data.currentJob || null,
+        company: data.company || null,
+        position: data.position || null,
+        bio: data.bio || null,
+        phone: data.phone || null,
+        linkedinUrl: data.linkedinUrl || null,
+        githubUrl: data.githubUrl || null,
+        websiteUrl: data.websiteUrl || null,
+        twitterUrl: data.twitterUrl || null,
+        img: data.img || null,
+      },
+    });
+
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("Create Alumni Error:", err);
+    return { success: false, error: true };
+  }
+};
+
+export const updateAlumni = async (
+  currentState: any,
+  data: AlumniSchema
+) => {
+  try {
+    const clerk = await clerkClient();
+    await clerk.users.updateUser(data.id!, {
+      emailAddress: [data.email],
+      ...(data.password && { password: data.password }),
+      firstName: data.name,
+    });
+
+    await prisma.alumni.update({
+      where: { id: data.id },
+      data: {
+        username: data.username,
+        name: data.name,
+
+        email: data.email,
+        password: data.password,
+        graduationYear: data.graduationYear,
+        currentJob: data.currentJob || null,
+        company: data.company || null,
+        position: data.position || null,
+        bio: data.bio || null,
+        phone: data.phone || null,
+        linkedinUrl: data.linkedinUrl || null,
+        githubUrl: data.githubUrl || null,
+        websiteUrl: data.websiteUrl || null,
+        twitterUrl: data.twitterUrl || null,
+        img: data.img || null,
+      },
+    });
+
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("Update Alumni Error:", err);
+    return { success: false, error: true };
+  }
+};
+
+export const deleteAlumni = async (
+  currentState: any,
+  data: FormData
+) => {
+  const id = data.get("id") as string;
+  try {
+    await clerkClient().users.deleteUser(id);
+    await prisma.alumni.delete({ where: { id } });
+    revalidatePath("/list/alumni");
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("Delete Alumni Error:", err);
+    return { success: false, error: true };
+  }
+};
+

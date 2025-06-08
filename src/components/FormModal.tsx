@@ -9,6 +9,7 @@ import {
   deleteResult,
   deleteLesson,
   deleteAssignment,
+  deleteAlumni,
 } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -18,7 +19,6 @@ import { useFormState } from "react-dom";
 import { toast } from "react-toastify";
 import { FormContainerProps } from "./FormContainer";
 
-// Updated delete action map with support for lessons and assignments.
 const deleteActionMap: { [key: string]: any } = {
   subject: deleteSubject,
   class: deleteClass,
@@ -32,9 +32,9 @@ const deleteActionMap: { [key: string]: any } = {
   attendance: undefined,
   event: undefined,
   announcement: undefined,
+  alumni: deleteAlumni,
 };
 
-// Dynamic (lazy) imports for form components.
 const TeacherForm = dynamic(() => import("./forms/TeacherForm"), {
   loading: () => <h1>Loading...</h1>,
 });
@@ -59,8 +59,10 @@ const LessonForm = dynamic(() => import("./forms/LessonForm"), {
 const AssignmentForm = dynamic(() => import("./forms/AssignmentForm"), {
   loading: () => <h1>Loading...</h1>,
 });
+const AlumniForm = dynamic(() => import("./forms/AlumniForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
 
-// Mapping table names to the corresponding form components.
 const forms: {
   [key: string]: (
     setOpen: Dispatch<SetStateAction<boolean>>,
@@ -93,6 +95,9 @@ const forms: {
   assignment: (setOpen, type, data, relatedData) => (
     <AssignmentForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
+  alumni: (setOpen, type, data, relatedData) => (
+    <AlumniForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  ),
 };
 
 const FormModal = ({
@@ -104,7 +109,6 @@ const FormModal = ({
 }: FormContainerProps & { relatedData?: any }) => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  // Set icon size based on action type.
   const size = type === "create" ? "w-8 h-8" : "w-7 h-7";
   const bgColor =
     type === "create"
@@ -113,7 +117,6 @@ const FormModal = ({
       ? "bg-lamaSky"
       : "bg-lamaPurple";
 
-  // Delete form handling using useFormState.
   const DeleteForm = () => {
     const deleteAction = deleteActionMap[table];
     const [state, formAction] = useFormState(deleteAction, { success: false });
@@ -141,7 +144,6 @@ const FormModal = ({
 
   return (
     <>
-      {/* Trigger button */}
       <button
         className={`${size} flex items-center justify-center rounded-full ${bgColor}`}
         onClick={() => setOpen(true)}
@@ -149,11 +151,9 @@ const FormModal = ({
         <Image src={`/${type}.png`} alt={`${type} icon`} width={16} height={16} />
       </button>
 
-      {/* Modal container */}
       {open && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg p-6 w-full max-w-2xl relative">
-            {/* Close button */}
             <button
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
               onClick={() => setOpen(false)}
@@ -161,7 +161,6 @@ const FormModal = ({
               <Image src="/close.png" alt="Close" width={20} height={20} className="invert" />
             </button>
 
-            {/* Render content based on action type */}
             {type === "delete" ? (
               <DeleteForm />
             ) : (

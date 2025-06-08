@@ -98,55 +98,41 @@ const AssignmentListPage = async ({
   const p = page ? parseInt(page) : 1;
 
   const query: Prisma.AssignmentWhereInput = {};
-  query.lesson = {};
+
+
+  let lessonFilter: Prisma.LessonWhereInput = { class: { students: { some: {} } } };
 
   if (queryParams) {
     for (const [key, value] of Object.entries(queryParams)) {
       if (value !== undefined) {
         switch (key) {
           case "classId":
-            query.lesson.classId = parseInt(value);
+            lessonFilter.classId = parseInt(value);
             break;
           case "teacherId":
-            query.lesson.teacherId = value;
+            lessonFilter.teacherId = value;
             break;
           case "search":
-            query.lesson.subject = {
-              name: { contains: value, mode: "insensitive" },
-            };
+            lessonFilter.subject = { name: { contains: value, mode: "insensitive" } };
             break;
+
           default:
             break;
         }
       }
     }
   }
+  query.lesson = lessonFilter;
 
   switch (role) {
-    case "admin":
-      break;
     case "teacher":
-      query.lesson.teacherId = currentUserId!;
+      lessonFilter.teacherId = currentUserId!;
       break;
     case "student":
-      query.lesson.class = {
-        students: {
-          some: {
-            id: currentUserId!,
-          },
-        },
-      };
+      lessonFilter.class = { students: { some: { id: currentUserId! } } };
       break;
     case "parent":
-      query.lesson.class = {
-        students: {
-          some: {
-            parentId: currentUserId!,
-          },
-        },
-      };
-      break;
-    default:
+      lessonFilter.class = { students: { some: { parentId: currentUserId! } } };
       break;
   }
 
@@ -167,6 +153,8 @@ const AssignmentListPage = async ({
     }),
     prisma.assignment.count({ where: query }),
   ]);
+
+  const mappedData: AssignmentList[] = data;
 
   return (
     <div className="bg-white p-4 rounded-md flex-1 m-4 mt-0">
