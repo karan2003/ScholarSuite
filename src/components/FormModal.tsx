@@ -10,6 +10,8 @@ import {
   deleteLesson,
   deleteAssignment,
   deleteAlumni,
+  deleteEvent,
+  deleteAnnouncement,
 } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -30,8 +32,8 @@ const deleteActionMap: { [key: string]: any } = {
   parent: undefined,
   assignment: deleteAssignment,
   attendance: undefined,
-  event: undefined,
-  announcement: undefined,
+  event: deleteEvent,
+  announcement: deleteAnnouncement,
   alumni: deleteAlumni,
 };
 
@@ -60,6 +62,12 @@ const AssignmentForm = dynamic(() => import("./forms/AssignmentForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 const AlumniForm = dynamic(() => import("./forms/AlumniForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const EventForm = dynamic(() => import("./forms/EventForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const AnnouncementForm = dynamic(() => import("./forms/AnnouncementForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 
@@ -98,6 +106,12 @@ const forms: {
   alumni: (setOpen, type, data, relatedData) => (
     <AlumniForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
+  event: (setOpen, type, data, relatedData) => (
+    <EventForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  ),
+  announcement: (setOpen, type, data, relatedData) => (
+    <AnnouncementForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  ),    
 };
 
 const FormModal = ({

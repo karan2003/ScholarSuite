@@ -10,7 +10,8 @@ import {
   LessonSchema,
   AssignmentSchema,
   ResultSchema,
-  AlumniSchema
+  AlumniSchema,
+  AnnouncementSchema,
 } from "./formValidationSchemas";
 import prisma from "./prisma";
 import { clerkClient } from "@clerk/nextjs/server";
@@ -737,3 +738,84 @@ export const deleteAlumni = async (
   }
 };
 
+export const createEvent = async (currentState: any, data: EventSchema) => {
+  try {
+    await prisma.event.create({
+      data: {
+        title: data.title,
+        description: data.description,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        classId: data.classId,
+      },
+    });
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("Create Event Error:", err);
+    return { success: false, error: true };
+  }
+};
+
+export const updateEvent = async (currentState: any, data: EventSchema) => {
+  try {
+    await prisma.event.update({
+      where: { id: data.id },
+      data: {
+        title: data.title,
+        description: data.description,
+        startTime: data.startTime,
+        endTime: data.endTime,
+        classId: data.classId,
+      },
+    });
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("Update Event Error:", err);
+    return { success: false, error: true };
+  }
+};
+
+export const deleteEvent = async (currentState: any, data: FormData) => {
+  const id = data.get("id") as string;
+  try {
+    await prisma.event.delete({ where: { id: parseInt(id) } });
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("Delete Event Error:", err);
+    return { success: false, error: true };
+  }
+};
+
+export const createAnnouncement = async (state: any, data: AnnouncementSchema) => {
+  try {
+    await prisma.announcement.create({ data });
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("Create Announcement Error:", err);
+    return { success: false, error: true };
+  }
+};
+
+export const updateAnnouncement = async (state: any, data: AnnouncementSchema) => {
+  try {
+    await prisma.announcement.update({
+      where: { id: data.id },
+      data,
+    });
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("Update Announcement Error:", err);
+    return { success: false, error: true };
+  }
+};
+
+export const deleteAnnouncement = async (state: any, formData: FormData) => {
+  const id = formData.get("id") as string;
+  try {
+    await prisma.announcement.delete({ where: { id: parseInt(id) } });
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("Delete Announcement Error:", err);
+    return { success: false, error: true };
+  }
+};

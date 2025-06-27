@@ -15,7 +15,8 @@
         | "result"
         | "attendance"
         | "event"
-        | "announcement";
+        | "announcement"
+        | "alumni";
     type: "create" | "update" | "delete";
     data?: any;
     id?: number | string;
@@ -105,6 +106,10 @@
             relatedData = { lessons: assignmentLessons };
             break;
         }
+        case "alumni": {
+            relatedData = {}; // Nothing extra needed now
+            break;
+        }
         case "result": {
             // Result: fetch exams, assignments, students, and subjects.
             const resultExams = await prisma.exam.findMany({
@@ -182,6 +187,13 @@
             relatedData = {};
             break;
         }
+        case "announcement": {
+            const announcementClasses = await prisma.class.findMany({
+            select: { id: true, name: true },
+            });
+            relatedData = { classes: announcementClasses };
+            break;
+        }          
         default: {
             relatedData = {};
             break;

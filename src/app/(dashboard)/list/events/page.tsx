@@ -90,10 +90,9 @@ const EventListPage = async ({
     parent: { students: { some: { parentId: currentUserId! } } },
   };
 
-  query.OR = [
-    { classId: null },
-    { class: roleConditions[role as keyof typeof roleConditions] || {} },
-  ];
+// Remove all role-based restrictions for now
+  query.OR = undefined;
+
 
   const [data, count] = await prisma.$transaction([
     prisma.event.findMany({
