@@ -9,8 +9,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }>) {
   return (
+    
     <div className="h-screen flex">
       {/* LEFT */}
+      
       <div className="w-[14%] md:w-[8%] lg:w-[16%] xl:w-[14%] p-4">
         <Link
           href="/"
@@ -39,6 +41,8 @@ export default function DashboardLayout({
         <Navbar />
         {children}
       </div>
+      <script src="https://cdn.botpress.cloud/webchat/v3.0/inject.js"></script>
+      <script src="https://files.bpcontent.cloud/2025/06/27/07/20250627075415-FVT5ZGR9.js"></script>
     </div>
   );
 }

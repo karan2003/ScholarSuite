@@ -129,9 +129,8 @@
 
 .animate-slideInLeft {
     animation: slideInLeft 0.8s ease-out infinite;
-  }
+}
 
- .animate-slideInRight {
+.animate-slideInRight {
     animation: slideInLeft 0.8s ease-out infinite;
-  }
-  
+}
