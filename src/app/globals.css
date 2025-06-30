@@ -1,136 +1,161 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+    @tailwind base;
+    @tailwind components;
+    @tailwind utilities;
 
-.react-calendar{
+    /* 🌿 React Calendar (small) */
+    .react-calendar {
     width: 100% !important;
     border: none !important;
     font-family: "Inter", sans-serif !important;
+    background: #f8f9fc;
+    border-radius: 0.75rem;
+    padding: 0.5rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    animation: fadeIn 0.6s ease-in-out;
+    }
 
-}
-
-.react-calendar__navigation__label__labelText{
-    font-weight: bold;
-}
-
-.react-calendar__title--active{
-    background-color: #C3EFBA;
-    color:black;
-}
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-.react-calendar {
-    width: 100% !important;
-    border: none !important;
-    font-family: "Inter", sans-serif !important;
-}
-
-.react-calendar__navigation__label__labelText {
+    .react-calendar__navigation__label__labelText {
     font-weight: 600;
-}
+    }
 
-.react-calendar__tile--active {
+    .react-calendar__tile--active {
     background-color: #c3ebfa !important;
     color: black !important;
-}
+    border-radius: 0.5rem;
+    animation: pulse 0.3s ease;
+    }
 
-.rbc-btn-group:first-child {
-    display: none !important;
-}
+    /* 📅 React Big Calendar */
+    .rbc-toolbar {
+    animation: slideInTop 0.4s ease-in-out;
+    }
 
-.rbc-toolbar-label {
+    .rbc-toolbar-label {
     text-align: right !important;
-    padding: 0px 20px !important;
-}
+    padding: 0 20px !important;
+    font-weight: 600;
+    color: #4f46e5;
+    font-size: 1.1rem;
+    }
 
-.rbc-btn-group:last-child {
+    .rbc-btn-group:first-child {
+    display: none !important;
+    }
+
+    .rbc-btn-group:last-child {
     font-size: 13px !important;
-}
+    }
 
-.rbc-btn-group:last-child button {
+    .rbc-btn-group:last-child button {
     border: none !important;
     background-color: #f1f0ff !important;
     margin-left: 2px !important;
-}
+    padding: 5px 12px !important;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.25s ease, transform 0.15s ease;
+    }
 
-.rbc-toolbar button.rbc-active {
+    .rbc-btn-group:last-child button:hover {
+    background-color: #e3e1ff !important;
+    transform: scale(1.05);
+    }
+
+    .rbc-toolbar button.rbc-active {
     background-color: #dbdafe !important;
-    box-shadow: none !important;
-}
+    box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.08) !important;
+    }
 
-.rbc-time-view {
+    /* Layout Tweaks */
+    .rbc-time-view {
     border-color: #eee !important;
-}
+    }
 
-.rbc-time-header {
+    .rbc-time-header {
     display: none !important;
-}
+    }
 
-.rbc-time-content {
+    .rbc-time-content {
     border: none !important;
-}
+    backdrop-filter: blur(2px);
+    background-color: rgba(255, 255, 255, 0.9);
+    animation: fadeIn 0.4s ease-in;
+    }
 
-.rbc-time-gutter.rbc-time-column {
+    .rbc-time-gutter.rbc-time-column {
     font-size: 12px !important;
-}
+    color: #666;
+    }
 
-.rbc-time-gutter.rbc-time-column .rbc-timeslot-group {
-    padding: 0px 20px !important;
-}
+    .rbc-time-gutter.rbc-time-column .rbc-timeslot-group {
+    padding: 0 20px !important;
+    }
 
-.rbc-timeslot-group {
-    background-color: #f7fdff !important;
-}
+    .rbc-timeslot-group {
+    background-color: #f9fbfc !important;
+    transition: background-color 0.3s ease;
+    }
 
-.rbc-day-slot {
+    .rbc-timeslot-group:hover {
+    background-color: #eef7ff !important;
+    }
+
+    .rbc-day-slot {
     font-size: 14px !important;
-}
+    }
 
-.rbc-event {
+    /* 🎨 Event Card Design */
+    .rbc-event {
     border: none !important;
     color: black !important;
     padding: 10px !important;
-    margin: 10px !important;
-    width: 99% !important;
-}
+    margin: 8px auto !important;
+    width: 94% !important;
+    border-radius: 0.6rem !important;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.07);
+    position: relative;
+    transition: all 0.25s ease-in-out;
+    animation: zoomIn 0.3s ease;
+    }
 
-.rbc-event:nth-child(1) {
-    background-color: #d5f5e3 !important; /* Soft green */
-}
-.rbc-event:nth-child(2) {
-    background-color: #fcf3cf !important; /* Soft yellow */
-}
-.rbc-event:nth-child(3) {
-    background-color: #d6eaf8 !important; /* Soft blue */
-}
-.rbc-event:nth-child(4) {
-    background-color: #f5d5f0 !important; /* Soft pink */
-}
-.rbc-event:nth-child(5) {
-    background-color: #d5f5e3 !important; /* Soft green */
-}
-.rbc-event:nth-child(6) {
-    background-color: #fcf3cf !important; /* Soft yellow */
-}
-.rbc-event:nth-child(7) {
-    background-color: #d6eaf8 !important; /* Soft blue */
-}
-.rbc-event:nth-child(8) {
-    background-color: #f5d5f0 !important; /* Soft pink */
-}
+    .rbc-event:hover {
+    transform: scale(1.02);
+    background-color: #e0f2ff !important;
+    }
 
-.rbc-event-label {
-    color: rgb(0, 0, 0) !important;
+    /* Optional: Color cycling fallback if no eventPropGetter is used */
+    .rbc-event:nth-child(1) { background-color: #d5f5e3 !important; }
+    .rbc-event:nth-child(2) { background-color: #fcf3cf !important; }
+    .rbc-event:nth-child(3) { background-color: #d6eaf8 !important; }
+    .rbc-event:nth-child(4) { background-color: #f5d5f0 !important; }
+
+    .rbc-event-label {
+    color: #444 !important;
     margin-bottom: 5px;
-}
+    font-weight: 600;
+    font-size: 11px;
+    }
 
-.animate-slideInLeft {
-    animation: slideInLeft 0.8s ease-out infinite;
-}
+    /* 🔄 Animations */
+    @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+    }
 
-.animate-slideInRight {
-    animation: slideInLeft 0.8s ease-out infinite;
-}
+    @keyframes zoomIn {
+    0% { opacity: 0; transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes slideInTop {
+    0% { transform: translateY(-10px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes pulse {
+    0% { transform: scale(1); background-color: #c3ebfa; }
+    50% { transform: scale(1.03); background-color: #b1e1f8; }
+    100% { transform: scale(1); background-color: #c3ebfa; }
+    }

@@ -21,24 +21,40 @@
         },
     });
 
-    return data.map((event) => (
-        <div
-        className="p-5 rounded-md border-2 border-gray-100 border-t-4 odd:border-t-lamaSky even:border-t-lamaPurple"
-        key={event.id}
-        >
-        <div className="flex items-center justify-between">
-            <h1 className="font-semibold text-gray-600">{event.title}</h1>
-            <span className="text-gray-300 text-xs">
-            {event.startTime.toLocaleTimeString("en-UK", {
-                hour: "2-digit",
-                minute: "2-digit",
-                hour12: false,
-            })}
-            </span>
+    if (data.length === 0) {
+        return (
+        <div className="p-4 text-sm text-gray-500 italic text-center">
+            No events scheduled for this day.
         </div>
-        <p className="mt-2 text-gray-400 text-sm">{event.description}</p>
+        );
+    }
+
+    return (
+        <div className="space-y-4">
+        {data.map((event, i) => (
+            <div
+            key={event.id}
+            className={`relative p-5 rounded-xl border shadow-sm transition duration-300 hover:shadow-md group ${
+                i % 2 === 0 ? "border-l-4 border-lamaSky" : "border-l-4 border-lamaPurple"
+            } bg-white`}
+            >
+            <div className="flex justify-between items-start">
+                <h2 className="text-md md:text-lg font-semibold text-gray-800 group-hover:text-lamaPurple">
+                {event.title}
+                </h2>
+                <span className="text-xs font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded-md shadow-sm">
+                {event.startTime.toLocaleTimeString("en-UK", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                    hour12: false,
+                })}
+                </span>
+            </div>
+            <p className="mt-2 text-sm text-gray-500 leading-relaxed">{event.description}</p>
+            </div>
+        ))}
         </div>
-    ));
+    );
     };
 
     export default EventList;

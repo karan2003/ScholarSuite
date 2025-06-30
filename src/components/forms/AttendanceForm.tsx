@@ -2,7 +2,10 @@
 
     import { zodResolver } from "@hookform/resolvers/zod";
     import { useForm } from "react-hook-form";
-    import { AttendanceSchema, attendanceSchema } from "@/lib/formValidationSchemas";
+    import {
+    AttendanceSchema,
+    attendanceSchema,
+    } from "@/lib/formValidationSchemas";
     import { createAttendance, updateAttendance } from "@/lib/actions";
     import { Dispatch, SetStateAction, useState } from "react";
     import { toast } from "react-toastify";
@@ -28,13 +31,12 @@
         defaultValues: {
         ...data,
         present: data?.present ?? false,
+        date: data?.date ? new Date(data.date) : new Date(), // for update default
         },
     });
 
     const router = useRouter();
-
-    // Local state to explicitly track value
-    const [presentValue, setPresentValue] = useState(
+    const [presentValue, setPresentValue] = useState<boolean>(
         data?.present ?? false
     );
 
@@ -43,7 +45,7 @@
 
         const payload = {
         ...formData,
-        present: presentValue, // explicitly submit state boolean
+        present: presentValue,
         };
 
         console.log("📦 Submitting payload:", payload);
@@ -67,9 +69,13 @@
         </h1>
 
         <div className="flex gap-4 flex-wrap">
+            {/* Student Select */}
             <div className="flex flex-col gap-1 w-full md:w-1/2">
             <label className="text-sm">Student</label>
-            <select {...register("studentId")} className="p-2 border rounded-md">
+            <select
+                {...register("studentId")}
+                className="p-2 border rounded-md"
+            >
                 <option value="">Select student</option>
                 {students?.map((s: any) => (
                 <option key={s.id} value={s.id}>
@@ -78,13 +84,19 @@
                 ))}
             </select>
             {errors.studentId && (
-                <span className="text-xs text-red-500">{errors.studentId.message}</span>
+                <span className="text-xs text-red-500">
+                {errors.studentId.message}
+                </span>
             )}
             </div>
 
+            {/* Lesson Select */}
             <div className="flex flex-col gap-1 w-full md:w-1/2">
             <label className="text-sm">Lesson</label>
-            <select {...register("lessonId")} className="p-2 border rounded-md">
+            <select
+                {...register("lessonId")}
+                className="p-2 border rounded-md"
+            >
                 <option value="">Select lesson</option>
                 {lessons?.map((l: any) => (
                 <option key={l.id} value={l.id}>
@@ -93,11 +105,34 @@
                 ))}
             </select>
             {errors.lessonId && (
-                <span className="text-xs text-red-500">{errors.lessonId.message}</span>
+                <span className="text-xs text-red-500">
+                {errors.lessonId.message}
+                </span>
+            )}
+            </div>
+
+            {/* Date Picker */}
+            <div className="flex flex-col gap-1 w-full md:w-1/2">
+            <label className="text-sm">Date</label>
+            <input
+                type="date"
+                {...register("date")}
+                className="p-2 border rounded-md"
+                defaultValue={
+                data?.date
+                    ? new Date(data.date).toISOString().split("T")[0]
+                    : new Date().toISOString().split("T")[0]
+                }
+            />
+            {errors.date && (
+                <span className="text-xs text-red-500">
+                {errors.date.message}
+                </span>
             )}
             </div>
         </div>
 
+        {/* Attendance Toggle */}
         <div className="flex flex-col gap-2">
             <label className="text-sm font-medium">Attendance Status</label>
             <div className="flex items-center gap-4">
@@ -124,7 +159,10 @@
 
         {data?.id && <input type="hidden" {...register("id")} value={data.id} />}
 
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded-md">
+        <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded-md"
+        >
             {type === "create" ? "Create" : "Update"}
         </button>
         </form>

@@ -188,6 +188,21 @@ export const attendanceSchema = z.object({
   studentId: z.string().min(1, { message: "Student is required!" }),
   lessonId: z.coerce.number().min(1, { message: "Lesson is required!" }),
   present: z.coerce.boolean({ required_error: "Attendance status is required!" }),
+  date: z.coerce.date({ message: "Date is required!" }),
 });
 
 export type AttendanceSchema = z.infer<typeof attendanceSchema>;
+
+export const bulkAttendanceSchema = z.object({
+  date: z.coerce.date({ message: "Date is required!" }),
+  lessonId: z.coerce.number().min(1, { message: "Lesson is required!" }),
+  entries: z.array(
+    z.object({
+      studentId: z.string().min(1, { message: "Student is required!" }),
+      present: z.boolean(),
+    })
+  ),
+});
+
+export type BulkAttendanceSchema = z.infer<typeof bulkAttendanceSchema>;
+

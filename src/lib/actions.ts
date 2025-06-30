@@ -830,7 +830,7 @@ export const createAttendance = async (_: any, data: any) => {
     await prisma.attendance.create({
       data: {
         ...validated,
-        date: new Date(), // or validated.date
+        date: validated.date, // or validated.date
       },
     });
     return { success: true, error: false };
@@ -868,6 +868,20 @@ export const deleteAttendance = async (
     return { success: true, error: false };
   } catch (err) {
     console.error("Delete Attendance Error:", err);
+    return { success: false, error: true };
+  }
+};
+
+export const createBulkAttendance = async (_: any, entries: AttendanceSchema[]) => {
+  try {
+    const validated = entries.map((entry) => attendanceSchema.parse(entry));
+    await prisma.attendance.createMany({
+      data: validated,
+      skipDuplicates: true, // ✅ Prevent duplicate crash
+    });
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("Bulk Attendance Error:", err);
     return { success: false, error: true };
   }
 };

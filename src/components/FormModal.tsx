@@ -74,6 +74,9 @@ const AnnouncementForm = dynamic(() => import("./forms/AnnouncementForm"), {
 const AttendanceForm = dynamic(() => import("./forms/AttendanceForm"), {
   loading: () => <h1>Loading...</h1>,
 });
+const BulkAttendanceForm = dynamic(() => import("./forms/BulkAttendanceForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
 
 const forms: {
   [key: string]: (
@@ -117,8 +120,11 @@ const forms: {
     <AnnouncementForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),
   attendance: (setOpen, type, data, relatedData) => (
-    <AttendanceForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
-  ),    
+    type === "bulk"
+      ? <BulkAttendanceForm setOpen={setOpen} relatedData={relatedData} />
+      : <AttendanceForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  ),
+      
 };
 
 const FormModal = ({

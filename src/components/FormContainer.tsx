@@ -112,26 +112,44 @@
         }
         
         case "attendance": {
+            // Get lessons created by this teacher (or all if admin)
             const attendanceLessons = await prisma.lesson.findMany({
-            where: role === "teacher" ? { teacherId: currentUserId! } : {},
-            select: { id: true, name: true },
+              where: role === "teacher" ? { teacherId: currentUserId! } : {},
+              select: { id: true, name: true, classId: true },
             });
-                        
+          
+            // Extract unique class IDs from teacher's lessons
+            const lessonClassIds = [
+              ...new Set(attendanceLessons.map((lesson) => lesson.classId)),
+            ];
+          
+            // Fetch students who belong to any of the relevant classes
             const attendanceStudents = await prisma.student.findMany({
-                where:
+              where:
                 role === "teacher"
-                    ? {
-                        class: {
-                        lessons: { some: { teacherId: currentUserId! } },
-                        },
+                  ? {
+                      classId: {
+                        in: lessonClassIds,
+                      },
                     }
-                    : {},
-                select: { id: true, name: true, surname: true },
+                  : {},
+              select: { id: true, name: true, surname: true },
             });
-
-            relatedData = { lessons: attendanceLessons, students: attendanceStudents };
+          
+            // Pass only the required fields for lessons (id and name)
+            const filteredLessons = attendanceLessons.map(({ id, name }) => ({
+              id,
+              name,
+            }));
+          
+            relatedData = {
+              lessons: filteredLessons,
+              students: attendanceStudents,
+            };
+          
             break;
-        }
+          }
+          
         case "event": {
             // Event: fetch classes for events.
             const eventClasses = await prisma.class.findMany({

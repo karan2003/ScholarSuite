@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "ScholarSuite",
-  description: "Next.js College Management System",
+  description: "Next.js Academic Management System",
 };
 
 export default function RootLayout({
