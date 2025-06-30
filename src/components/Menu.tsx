@@ -73,17 +73,17 @@ const menuItems = [
         visible: ["admin", "teacher", "student", "parent"],
       },
       {
-        icon: "/calendar.png",
+        icon: "/event.png",
         label: "Events",
         href: "/list/events",
         visible: ["admin", "teacher", "student", "parent"],
       },
-      {
+/*       {
         icon: "/message.png",
         label: "Messages",
         href: "/list/messages",
         visible: ["admin", "teacher", "student", "parent"],
-      },
+      }, */
       {
         icon: "/announcement.png",
         label: "Announcements",
@@ -111,7 +111,7 @@ const menuItems = [
     ],
   },
   {
-    title: "OTHER",
+    title: "",
     items: [
       {
         icon: "/profile.png",

@@ -12,6 +12,7 @@ import {
   deleteAlumni,
   deleteEvent,
   deleteAnnouncement,
+  deleteAttendance,
 } from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -31,7 +32,7 @@ const deleteActionMap: { [key: string]: any } = {
   lesson: deleteLesson,
   parent: undefined,
   assignment: deleteAssignment,
-  attendance: undefined,
+  attendance: deleteAttendance,
   event: deleteEvent,
   announcement: deleteAnnouncement,
   alumni: deleteAlumni,
@@ -68,6 +69,9 @@ const EventForm = dynamic(() => import("./forms/EventForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 const AnnouncementForm = dynamic(() => import("./forms/AnnouncementForm"), {
+  loading: () => <h1>Loading...</h1>,
+});
+const AttendanceForm = dynamic(() => import("./forms/AttendanceForm"), {
   loading: () => <h1>Loading...</h1>,
 });
 
@@ -111,6 +115,9 @@ const forms: {
   ),
   announcement: (setOpen, type, data, relatedData) => (
     <AnnouncementForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
+  ),
+  attendance: (setOpen, type, data, relatedData) => (
+    <AttendanceForm type={type} data={data} setOpen={setOpen} relatedData={relatedData} />
   ),    
 };
 

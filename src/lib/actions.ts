@@ -12,6 +12,8 @@ import {
   ResultSchema,
   AlumniSchema,
   AnnouncementSchema,
+  AttendanceSchema,
+  attendanceSchema,
 } from "./formValidationSchemas";
 import prisma from "./prisma";
 import { clerkClient } from "@clerk/nextjs/server";
@@ -150,7 +152,8 @@ export const createTeacher = async (
   data: TeacherSchema
 ) => {
   try {
-    const user = await clerkClient().users.createUser({
+    const clerk = await clerkClient();
+    const user=await clerk.users.createUser({
       username: data.username,
       password: data.password,
       firstName: data.name,
@@ -816,6 +819,55 @@ export const deleteAnnouncement = async (state: any, formData: FormData) => {
     return { success: true, error: false };
   } catch (err) {
     console.error("Delete Announcement Error:", err);
+    return { success: false, error: true };
+  }
+};
+
+/* Attendance */
+export const createAttendance = async (_: any, data: any) => {
+  try {
+    const validated = attendanceSchema.parse(data); // ✅ coercion handles string -> boolean
+    await prisma.attendance.create({
+      data: {
+        ...validated,
+        date: new Date(), // or validated.date
+      },
+    });
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("Create Attendance Error:", err);
+    return { success: false, error: true };
+  }
+};
+export const updateAttendance = async (_: any, data: any) => {
+  try {
+    const validated = attendanceSchema.parse(data);
+    await prisma.attendance.update({
+      where: { id: validated.id },
+      data: {
+        studentId: validated.studentId,
+        lessonId: validated.lessonId,
+        present: validated.present, // actual boolean now
+      },
+    });
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("Update Attendance Error:", err);
+    return { success: false, error: true };
+  }
+};;
+
+
+export const deleteAttendance = async (
+  currentState: any,
+  data: FormData
+) => {
+  const id = data.get("id") as string;
+  try {
+    await prisma.attendance.delete({ where: { id: parseInt(id) } });
+    return { success: true, error: false };
+  } catch (err) {
+    console.error("Delete Attendance Error:", err);
     return { success: false, error: true };
   }
 };

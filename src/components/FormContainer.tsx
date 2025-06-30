@@ -110,60 +110,26 @@
             relatedData = {}; // Nothing extra needed now
             break;
         }
-        case "result": {
-            // Result: fetch exams, assignments, students, and subjects.
-            const resultExams = await prisma.exam.findMany({
-            select: {
-                id: true,
-                title: true,
-                lesson: {
-                select: {
-                    subjectId: true,
-                    class: { select: { id: true } },
-                },
-                },
-            },
-            });
-            const resultAssignments = await prisma.assignment.findMany({
-            select: {
-                id: true,
-                title: true,
-                lesson: {
-                select: {
-                    subjectId: true,
-                    class: { select: { id: true } },
-                },
-                },
-            },
-            });
-            const resultStudents = await prisma.student.findMany({
-            where:
-                role === "teacher"
-                ? {
-                    class: {
-                        lessons: { some: { teacherId: currentUserId } },
-                    },
-                    }
-                : {},
-            select: { id: true, name: true, surname: true },
-            });
-            const subjects = await prisma.subject.findMany({
-            select: { id: true, name: true },
-            });
-            relatedData = {
-            exams: resultExams,
-            assignments: resultAssignments,
-            students: resultStudents,
-            subjects,
-            };
-            break;
-        }
+        
         case "attendance": {
-            // Attendance: fetch lessons to link with an attendance record.
             const attendanceLessons = await prisma.lesson.findMany({
+            where: role === "teacher" ? { teacherId: currentUserId! } : {},
             select: { id: true, name: true },
             });
-            relatedData = { lessons: attendanceLessons };
+                        
+            const attendanceStudents = await prisma.student.findMany({
+                where:
+                role === "teacher"
+                    ? {
+                        class: {
+                        lessons: { some: { teacherId: currentUserId! } },
+                        },
+                    }
+                    : {},
+                select: { id: true, name: true, surname: true },
+            });
+
+            relatedData = { lessons: attendanceLessons, students: attendanceStudents };
             break;
         }
         case "event": {
