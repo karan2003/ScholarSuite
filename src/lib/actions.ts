@@ -701,9 +701,8 @@ export const updateAlumni = async (
       data: {
         username: data.username,
         name: data.name,
-
         email: data.email,
-        password: data.password,
+        ...(data.password && { password: data.password }), // ✅ only update if present
         graduationYear: data.graduationYear,
         currentJob: data.currentJob || null,
         company: data.company || null,
@@ -717,6 +716,7 @@ export const updateAlumni = async (
         img: data.img || null,
       },
     });
+    
 
     return { success: true, error: false };
   } catch (err) {

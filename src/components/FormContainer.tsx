@@ -146,10 +146,8 @@
               lessons: filteredLessons,
               students: attendanceStudents,
             };
-          
             break;
-          }
-          
+        }
         case "event": {
             // Event: fetch classes for events.
             const eventClasses = await prisma.class.findMany({
