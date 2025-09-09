@@ -65,7 +65,7 @@ ScholarSuite is a comprehensive university management system for students and pr
 
 ## Screenshots
 
-![alt text](<Screenshot 2025-05-15 151858.png>) ![alt text](<Screenshot 2025-05-15 151849.png>) ![alt text](<Screenshot 2025-05-15 151828.png>) ![alt text](<Screenshot 2025-05-15 151807.png>) ![alt text](<Screenshot 2025-05-15 151756.png>) ![alt text](<Screenshot 2025-05-15 151743.png>) ![alt text](<Screenshot 2025-05-15 151715.png>) ![alt text](<Screenshot 2025-05-15 151657.png>) ![alt text](<Screenshot 2025-05-15 151625.png>) ![alt text](<Screenshot 2025-05-15 151601.png>)
+![alt text](<1.png>) ![alt text](<3.png>) ![alt text](<4.png>) ![alt text](<5.png>) ![alt text](<6.png>) ![alt text](<7.png>) ![alt text](<8.png>) ![alt text](<9.png>) ![alt text](<10.png>) ![alt text](<11.png>)
 
 ## Contributing
 
